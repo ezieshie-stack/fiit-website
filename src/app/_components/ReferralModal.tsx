@@ -11,12 +11,18 @@ export default function ReferralModal({ onClose }: { onClose: () => void }) {
   const [referrerPhone, setReferrerPhone] = useState("");
   const [friendFirstName, setFriendFirstName] = useState("");
   const [friendPhone, setFriendPhone] = useState("");
+  const [friendConsent, setFriendConsent] = useState(false);
+  const [privacyConsent, setPrivacyConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!friendConsent || !privacyConsent) {
+      setError("Please confirm both checkboxes before submitting.");
+      return;
+    }
     setError(null);
     setSubmitting(true);
     try {
@@ -102,6 +108,37 @@ export default function ReferralModal({ onClose }: { onClose: () => void }) {
                   required
                 />
               </div>
+            </div>
+
+            <div className={styles.consentBlock}>
+              <label className={styles.consentRow}>
+                <input
+                  type="checkbox"
+                  className={styles.consentCheckbox}
+                  checked={friendConsent}
+                  onChange={(e) => setFriendConsent(e.target.checked)}
+                />
+                <span className={styles.consentText}>
+                  I have my friend&apos;s permission to share their first name and phone
+                  number with FIIT Co. so the studio can contact them about a membership.
+                </span>
+              </label>
+              <label className={styles.consentRow}>
+                <input
+                  type="checkbox"
+                  className={styles.consentCheckbox}
+                  checked={privacyConsent}
+                  onChange={(e) => setPrivacyConsent(e.target.checked)}
+                />
+                <span className={styles.consentText}>
+                  I agree to the{" "}
+                  <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">
+                    Privacy Policy
+                  </a>{" "}
+                  and understand referral records may be kept for up to 24 months for
+                  accounting purposes.
+                </span>
+              </label>
             </div>
 
             {error && <div className={styles.formError}>{error}</div>}
