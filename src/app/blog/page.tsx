@@ -7,10 +7,10 @@ import { getFeaturedPost, getNonFeaturedPosts } from "./posts";
 export const metadata = {
   title: "Journal",
   description:
-    "Notes from the floor at FIIT Co. — training, habits, nutrition, recipes, and community stories from Leslieville's boxing studio.",
+    "Notes from the floor at FIIT Co.: training, habits, nutrition, recipes, and community stories from Leslieville's boxing studio.",
   alternates: { canonical: "https://fiitco.ca/blog" },
   openGraph: {
-    title: "Journal — FIIT Co.",
+    title: "Journal | FIIT Co.",
     description:
       "Training, habits, nutrition, and community stories from FIIT Co. Leslieville.",
     url: "https://fiitco.ca/blog",

@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: post.excerpt,
     alternates: { canonical: `https://fiitco.ca/blog/${post.slug}` },
     openGraph: {
-      title: `${post.title} — FIIT Co. Journal`,
+      title: `${post.title} | FIIT Co. Journal`,
       description: post.excerpt,
       url: `https://fiitco.ca/blog/${post.slug}`,
       type: "article",

@@ -29,9 +29,9 @@ export const TRAINERS: Trainer[] = [
     href: "/about#trainer-jason",
     tags: ["Boxing", "Kickboxing", "Founder"],
     fullBio: [
-      "Jason Battiste is the founder of FIIT Co. and the reason the studio exists. A former Canadian Super Middleweight Kickboxing Champion with 37+ years of combat experience, he's spent the better part of four decades learning how to coach the sport he loves — and translating that knowledge into a room where everyone from first-timers to working fighters can thrive.",
+      "Jason Battiste is the founder of FIIT Co. and the reason the studio exists. A former Canadian Super Middleweight Kickboxing Champion with 37+ years of combat experience, he's spent the better part of four decades learning how to coach the sport he loves, and translating that knowledge into a room where everyone from first-timers to working fighters can thrive.",
       "He opened FIIT Co. in Leslieville because he wanted a space that felt like a real gym: raw, honest, and unapologetically centred on technique. No pretense, no attitude, no scripted hype. Just real work.",
-      "His mantra, printed on the wall and repeated in every class: don't stop when you're tired — stop when you're done.",
+      "His mantra, printed on the wall and repeated in every class: don't stop when you're tired; stop when you're done.",
     ],
   },
   {
@@ -56,7 +56,7 @@ export const TRAINERS: Trainer[] = [
     href: "/about#trainer-nick",
     tags: ["Academy", "Competition", "Olympic"],
     fullBio: [
-      "Nick Radionov is a former member of the Ukrainian National Olympic Boxing team and a Boxing Ontario Level 3 coach with over 200 amateur and professional bouts to his name. He's a two-time World Kickboxing Champion and a European Savate Champion — few coaches in Toronto carry that kind of competitive résumé.",
+      "Nick Radionov is a former member of the Ukrainian National Olympic Boxing team and a Boxing Ontario Level 3 coach with over 200 amateur and professional bouts to his name. He's a two-time World Kickboxing Champion and a European Savate Champion. Few coaches in Toronto carry that kind of competitive résumé.",
       "At FIIT Co. he leads the Boxing Academy, the program built for members who want to take their training from fitness-focused to competition-ready. His coaching is technical, demanding, and relentlessly precise. If you want to learn how fighters actually train, Nick is the person you want in your corner.",
     ],
   },
@@ -69,7 +69,7 @@ export const TRAINERS: Trainer[] = [
     href: "/about#trainer-tyrone",
     tags: ["Yoga", "Mobility", "Recovery"],
     fullBio: [
-      "Tyrone is a Toronto-based yoga instructor who blends Hatha, Vinyasa and Yin traditions into a mindfulness-led practice. His classes sit at the intersection of strength, mobility and recovery — the perfect counterweight to the hard work our members put in on the heavy bag.",
+      "Tyrone is a Toronto-based yoga instructor who blends Hatha, Vinyasa and Yin traditions into a mindfulness-led practice. His classes sit at the intersection of strength, mobility and recovery: the perfect counterweight to the hard work our members put in on the heavy bag.",
       "He teaches with an inclusive, accessible tone that welcomes first-timers as easily as it deepens a fighter's recovery routine. If you train hard at FIIT and you're not stretching, his class is the missing piece.",
     ],
   },
@@ -95,7 +95,7 @@ export const TRAINERS: Trainer[] = [
     href: "/about#trainer-matt",
     tags: ["Training"],
     fullBio: [
-      "Matt's full bio is on the way — check back soon for the details.",
+      "Matt's full bio is on the way. Check back soon for the details.",
     ],
   },
 ];

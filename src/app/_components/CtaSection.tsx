@@ -26,7 +26,7 @@ export default function CtaSection() {
               </h3>
               <p className={styles.body} style={{ marginBottom: "2rem", color: "rgba(255,255,255,0.66)" }}>
                 Every active member gets two free guest passes per month. Your friend trains
-                on us — no card, no catch.
+                on us. No card, no catch.
               </p>
               <button type="button" className={styles.btnRed} onClick={() => setMode("guest")}>
                 Send A Guest Pass

@@ -179,7 +179,7 @@ function PhotoCard({
     return (
       <Link
         href={member.href}
-        aria-label={`${member.name}, ${member.role} — read bio`}
+        aria-label={`${member.name}, ${member.role}. Read bio.`}
         {...sharedProps}
       >
         {inner}

@@ -106,12 +106,12 @@ const FAQS = [
     a: "Absolutely not. Our classes are designed for all levels from beginner to advanced. Each class goes over technique and form so you have the tools you need to succeed. The most important thing is that you work hard and have fun.",
   },
   {
-    q: "It's my first time — what equipment do I need?",
+    q: "It's my first time. What equipment do I need?",
     a: "All you need is workout clothes, comfortable shoes and a refillable water bottle. For your first class, you can borrow a pair of boxing gloves. After that, gloves rent for $5 per session or you can buy a pair from us.",
   },
   {
     q: "Do you offer affordable membership options?",
-    a: "At FIIT Co, we believe fitness is for everybody. We have a variety of memberships based on your goals and budget — 5, 10 or 20 class passes, monthly memberships, and auto-renew plans.",
+    a: "At FIIT Co, we believe fitness is for everybody. We have a variety of memberships based on your goals and budget: 5, 10 or 20 class passes, monthly memberships, and auto-renew plans.",
   },
   {
     q: "Do you have personal trainers available?",
@@ -119,7 +119,7 @@ const FAQS = [
   },
   {
     q: "Where exactly is the gym?",
-    a: "FIIT Co is located in Leslieville at 1047 Gerrard St E on the upper floor — above The Vatican Gift Shop. Nearest intersection: Gerrard and Jones.",
+    a: "FIIT Co is located in Leslieville at 1047 Gerrard St E on the upper floor, above The Vatican Gift Shop. Nearest intersection: Gerrard and Jones.",
   },
 ];
 
@@ -144,7 +144,7 @@ export default function HomePage() {
             You're Worth<br />The Fight.
           </h1>
           <p className={styles.heroSub}>
-            A boutique boxing studio in Toronto where fitness meets community —
+            A boutique boxing studio in Toronto where fitness meets community,
             and everyone is welcome.
           </p>
           <div className={styles.heroBottom}>
@@ -194,7 +194,7 @@ export default function HomePage() {
               <div className={styles.pillarNum}>02</div>
               <h3 className={styles.pillarTitle}>Every Discipline</h3>
               <p className={styles.body}>
-                From boxing to strength to yoga — a full stack of class formats
+                From boxing to strength to yoga: a full stack of class formats
                 built to progress you in and out of the ring.
               </p>
             </div>

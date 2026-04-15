@@ -8,7 +8,7 @@ export const metadata = {
     "Visit FIIT Co. at 1047 Gerrard St E in Leslieville, Toronto. 6,000 sq ft boxing and fitness floor. Hours, equipment, gallery, and contact.",
   alternates: { canonical: "https://fiitco.ca/studio" },
   openGraph: {
-    title: "The Studio — FIIT Co.",
+    title: "The Studio | FIIT Co.",
     description:
       "1047 Gerrard St E in Leslieville. Open 7 days. Boxing, strength, and conditioning on one training floor.",
     url: "https://fiitco.ca/studio",
@@ -60,7 +60,7 @@ export default function StudioPage() {
               </h2>
               <p className={styles.bodyLg} style={{ marginBottom: "2.5rem" }}>
                 Toronto, ON M4M 1Z7<br />
-                Leslieville — just east of Jones Ave.
+                Leslieville, just east of Jones Ave.
               </p>
 
               <div className={styles.contactRow}>

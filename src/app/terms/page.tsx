@@ -3,7 +3,7 @@ import styles from "../site.module.css";
 import SiteFooter from "../_components/SiteFooter";
 
 export const metadata = {
-  title: "Terms of Use — FIIT Co.",
+  title: "Terms of Use | FIIT Co.",
   description:
     "Terms of use for fiitco.ca. Acceptable use, intellectual property, referral rules, liability, and governing law for FIIT Co.'s website and online forms.",
   alternates: { canonical: "https://fiitco.ca/terms" },
@@ -76,8 +76,8 @@ export default function TermsPage() {
             {/* 3 */}
             <h2 className={styles.legalH2}>3. Informational Purpose</h2>
             <p className={styles.body}>
-              Content on the Site — including class descriptions, trainer bios,
-              pricing, blog posts, and nutrition notes — is provided for general
+              Content on the Site, including class descriptions, trainer bios,
+              pricing, blog posts, and nutrition notes, is provided for general
               information only. It is <strong>not</strong> medical, nutritional,
               rehabilitation, or professional fitness advice. Always consult a
               qualified healthcare provider before starting any exercise or nutrition
@@ -131,7 +131,7 @@ export default function TermsPage() {
                 anyone&apos;s privacy.
               </li>
               <li>
-                Submit false, misleading, or stolen information — including a
+                Submit false, misleading, or stolen information, including a
                 friend&apos;s phone number without permission.
               </li>
               <li>
@@ -213,7 +213,7 @@ export default function TermsPage() {
               trainers, and affiliates are not liable for any indirect, incidental,
               special, consequential, or punitive damages, or any loss of profits,
               data, goodwill, or other intangible losses, arising out of or in
-              connection with your use of the Site — even if we have been advised of
+              connection with your use of the Site, even if we have been advised of
               the possibility of such damages. Our total liability to you for any claim
               related to the Site will not exceed <strong>one hundred Canadian
               dollars (CAD $100)</strong>.
@@ -229,14 +229,14 @@ export default function TermsPage() {
               You agree to indemnify and hold FIIT Co. harmless from any claim, loss,
               liability, or expense (including reasonable legal fees) that arises out
               of your breach of these Terms, your misuse of the Site, or your violation
-              of another person&apos;s rights — including submitting someone else&apos;s
+              of another person&apos;s rights, including submitting someone else&apos;s
               contact information without permission.
             </p>
 
             {/* 12 */}
             <h2 className={styles.legalH2}>12. Links To Other Sites</h2>
             <p className={styles.body}>
-              The Site may contain links to external websites — Mindbody, Instagram,
+              The Site may contain links to external websites: Mindbody, Instagram,
               Facebook, Yelp, and others. We provide those links for convenience and do
               not endorse or take responsibility for the content, privacy practices, or
               accessibility of any site we do not control.

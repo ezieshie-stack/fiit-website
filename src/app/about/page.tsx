@@ -7,10 +7,10 @@ import { TRAINERS } from "../_data/trainers";
 export const metadata = {
   title: "About",
   description:
-    "How Jason Battiste's boxing obsession became FIIT Co. — Toronto's boutique boxing and fitness studio in Leslieville. Our story, mantra, and the community we train alongside.",
+    "How Jason Battiste's boxing obsession became FIIT Co., Toronto's boutique boxing and fitness studio in Leslieville. Our story, mantra, and the community we train alongside.",
   alternates: { canonical: "https://fiitco.ca/about" },
   openGraph: {
-    title: "About — FIIT Co.",
+    title: "About | FIIT Co.",
     description:
       "Don't stop when you're tired. Stop when you're done. The story behind FIIT Co. Leslieville.",
     url: "https://fiitco.ca/about",
@@ -59,8 +59,8 @@ export default function AboutPage() {
                 <span className={styles.accent}>Stop when you're done.</span>
               </p>
               <p className={styles.body} style={{ marginBottom: "1.25rem" }}>
-                That's the standard founder Jason Battiste — a former Canadian Super
-                Middleweight Kickboxing Champion with 37+ years of combat experience —
+                That's the standard founder Jason Battiste, a former Canadian Super
+                Middleweight Kickboxing Champion with 37+ years of combat experience,
                 built this studio on.
               </p>
               <p className={styles.body}>
@@ -79,8 +79,8 @@ export default function AboutPage() {
             6,000 Square Feet<br />Of Work To Do.
           </h2>
           <p className={styles.bodyLg} style={{ maxWidth: "820px", marginBottom: "3rem" }}>
-            Traditional fight gear — heavy bags, focus pads, ground and pound
-            dummies, jump ropes — sits alongside strength tools like barbells,
+            Traditional fight gear (heavy bags, focus pads, ground and pound
+            dummies, jump ropes) sits alongside strength tools like barbells,
             free weights and kettlebells. Concept2 rowers, Assault Airbikes,
             medicine balls, battle ropes, sleds and TRX trainers round out the
             functional floor.

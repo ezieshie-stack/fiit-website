@@ -3,7 +3,7 @@ import styles from "../site.module.css";
 import SiteFooter from "../_components/SiteFooter";
 
 export const metadata = {
-  title: "Accessibility — FIIT Co.",
+  title: "Accessibility | FIIT Co.",
   description:
     "FIIT Co.'s commitment to digital and in-studio accessibility. WCAG 2.1 AA targets, known limitations, and how to request assistance or report a barrier.",
   alternates: { canonical: "https://fiitco.ca/accessibility" },
@@ -34,7 +34,7 @@ export default function AccessibilityPage() {
             <p className={styles.bodyLg}>
               FIIT Co. is committed to making our studio and website usable by as many
               people as possible, regardless of ability. Training is for everyone, and
-              that starts with the door being open — physically and digitally.
+              that starts with the door being open, physically and digitally.
             </p>
 
             {/* 1 */}
@@ -45,7 +45,7 @@ export default function AccessibilityPage() {
               the international benchmark referenced by Canada&apos;s{" "}
               <em>Accessible Canada Act</em> and Ontario&apos;s{" "}
               <em>Accessibility for Ontarians with Disabilities Act (AODA)</em>. We are
-              not perfect yet — accessibility is ongoing work, and we welcome feedback
+              not perfect yet. Accessibility is ongoing work, and we welcome feedback
               from anyone who hits a barrier.
             </p>
 
@@ -53,34 +53,34 @@ export default function AccessibilityPage() {
             <h2 className={styles.legalH2}>2. What We&apos;ve Done On This Site</h2>
             <ul className={styles.legalList}>
               <li>
-                <strong>Semantic HTML</strong> — headings, landmarks, lists, and buttons
+                <strong>Semantic HTML</strong>: headings, landmarks, lists, and buttons
                 are marked up so screen readers can navigate the page structure.
               </li>
               <li>
-                <strong>Keyboard navigation</strong> — every link, button, form field,
+                <strong>Keyboard navigation</strong>: every link, button, form field,
                 and modal can be reached and operated with a keyboard alone. Focus
                 states are visible.
               </li>
               <li>
-                <strong>Colour contrast</strong> — body text and interactive elements
+                <strong>Colour contrast</strong>: body text and interactive elements
                 target a 4.5:1 contrast ratio against their background.
               </li>
               <li>
-                <strong>Alt text</strong> — meaningful images carry descriptive{" "}
+                <strong>Alt text</strong>: meaningful images carry descriptive{" "}
                 <code>alt</code> attributes; decorative images are marked as decorative
                 so screen readers skip them.
               </li>
               <li>
-                <strong>Form labels</strong> — all inputs in our Guest Pass and
+                <strong>Form labels</strong>: all inputs in our Guest Pass and
                 Refer-A-Friend forms have associated labels, and errors are announced
                 in text, not colour alone.
               </li>
               <li>
-                <strong>Responsive layout</strong> — content reflows on phones, tablets,
+                <strong>Responsive layout</strong>: content reflows on phones, tablets,
                 and desktop without horizontal scrolling, and is readable at 200% zoom.
               </li>
               <li>
-                <strong>Reduced motion</strong> — we use animation sparingly and do not
+                <strong>Reduced motion</strong>: we use animation sparingly and do not
                 auto-play video or audio on this site.
               </li>
             </ul>
@@ -150,7 +150,7 @@ export default function AccessibilityPage() {
             <ul className={styles.legalList}>
               <li>VoiceOver (macOS and iOS)</li>
               <li>TalkBack (Android)</li>
-              <li>NVDA (Windows) — where available</li>
+              <li>NVDA (Windows), where available</li>
               <li>Keyboard-only navigation (Tab, Shift-Tab, Enter, Space, Escape)</li>
               <li>Browser zoom up to 200%</li>
             </ul>
@@ -163,8 +163,8 @@ export default function AccessibilityPage() {
             <p className={styles.body}>
               If any part of this website, our studio, or our booking process is
               difficult for you to use, tell us. We will do our best to provide the
-              information or service in a format that works for you — by phone, by
-              email, or in person — within a reasonable time, at no cost.
+              information or service in a format that works for you: by phone, by
+              email, or in person, within a reasonable time, at no cost.
             </p>
             <address className={styles.legalAddress}>
               <strong>FIIT Co.</strong>

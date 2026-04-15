@@ -8,7 +8,7 @@ export const metadata = {
     "Twelve class formats at FIIT Co. Leslieville: boxing, HIIT, strength, Muay Thai, yoga, and Boxing Academy. Memberships, class packs, personal training, kids & teens pricing.",
   alternates: { canonical: "https://fiitco.ca/programs" },
   openGraph: {
-    title: "Programs & Pricing — FIIT Co.",
+    title: "Programs & Pricing | FIIT Co.",
     description:
       "Twelve class formats. Memberships, class packs, personal training, and Boxing Academy at 1047 Gerrard St E.",
     url: "https://fiitco.ca/programs",
@@ -34,7 +34,7 @@ const PROGRAMS = [
     title: "FIIT Hybrid",
     img: "/classes/hybrid.webp",
     includes: ["Boxing drills", "4 functional rounds", "Race-inspired format", "Team energy"],
-    who: "Playfully known as Hybox — boxing drills meet functional stations over four rounds.",
+    who: "Playfully known as Hybox: boxing drills meet functional stations over four rounds.",
   },
   {
     num: "03",
@@ -66,7 +66,7 @@ const PROGRAMS = [
     title: "FIIT Caveman Circuit",
     img: "/classes/caveman.webp",
     includes: ["10 dynamic stations", "5-min rounds", "Push, pull, run", "Mental & physical test"],
-    who: "The original FIIT circuit — tests your mental and physical endurance.",
+    who: "The original FIIT circuit that tests your mental and physical endurance.",
   },
   {
     num: "07",
@@ -90,7 +90,7 @@ const PROGRAMS = [
     title: "Boxing Academy · Fundamentals",
     img: null,
     includes: ["Authentic stance", "Defense & movement", "Combinations", "Rhythm & coordination"],
-    who: "Level 1 — learn technique, stance, defense and body control. Coached by Nick Radionov.",
+    who: "Level 1: learn technique, stance, defense and body control. Coached by Nick Radionov.",
   },
   {
     num: "10",
@@ -98,7 +98,7 @@ const PROGRAMS = [
     title: "Boxing Academy · Technical Sparring",
     img: null,
     includes: ["Controlled partner drills", "Technical sparring", "Ring craft", "Real application"],
-    who: "Level 2 — controlled drills and technical sparring bridge training and fighting.",
+    who: "Level 2: controlled drills and technical sparring bridge training and fighting.",
   },
   {
     num: "11",
@@ -106,7 +106,7 @@ const PROGRAMS = [
     title: "Boxing Academy · Competition",
     img: null,
     includes: ["Open sparring", "Tactical development", "Fight preparation", "Competition track"],
-    who: "Level 3 — where athletes become fighters. Advanced program, fight preparation.",
+    who: "Level 3: where athletes become fighters. Advanced program, fight preparation.",
   },
   {
     num: "12",
@@ -114,7 +114,7 @@ const PROGRAMS = [
     title: "Kids & Teens Program",
     img: null,
     includes: ["Ages 7–17", "Coached progression", "Confidence & discipline", "Structured & fun"],
-    who: "Kids (7–12) and Teens (12–17) — empower young fighters through combat training.",
+    who: "Kids (7–12) and Teens (12–17): empower young fighters through combat training.",
   },
 ];
 
@@ -451,7 +451,7 @@ export default function ProgramsPage() {
             Skill, Confidence, Fun.
           </h2>
           <p className={styles.bodyLg} style={{ maxWidth: "720px", marginBottom: "4rem" }}>
-            Sessions are structured, supportive and adaptable — whether your
+            Sessions are structured, supportive and adaptable, whether your
             child is brand new to boxing or not.
           </p>
           <PricingRow plans={KIDS_PRICING} />
@@ -501,7 +501,7 @@ export default function ProgramsPage() {
             Sweet Science.<br />Serious Track.
           </h2>
           <p className={styles.bodyLg} style={{ maxWidth: "720px", marginBottom: "4rem" }}>
-            A separate program run by Nick Radionov — former Ukrainian Olympic
+            A separate program run by Nick Radionov, former Ukrainian Olympic
             Team boxer and Boxing Ontario Level 3 coach. Dedicated to technique,
             strategy and competition-ready development.
           </p>

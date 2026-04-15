@@ -102,7 +102,7 @@ export default function VideoTestimonials({
               aria-label={
                 hasVideo
                   ? `Play ${t.name}'s video testimonial`
-                  : `${t.name}'s video testimonial — coming soon`
+                  : `${t.name}'s video testimonial, coming soon`
               }
               onClick={() => hasVideo && setOpenId(t.id)}
             >

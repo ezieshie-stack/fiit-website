@@ -74,7 +74,7 @@ export default function SiteFooter() {
                   <MarkerContent>
                     <span className={styles.preFooterMapPin} aria-hidden="true" />
                   </MarkerContent>
-                  <MarkerTooltip>FIIT Co. — 1047 Gerrard St E</MarkerTooltip>
+                  <MarkerTooltip>FIIT Co., 1047 Gerrard St E</MarkerTooltip>
                 </MapMarker>
               </Map>
               <a
@@ -125,7 +125,7 @@ export default function SiteFooter() {
           <div className={styles.preFooterCol}>
             <div className={styles.preFooterLabel}>Follow Us</div>
             <p className={styles.preFooterText}>
-              See what&apos;s happening on the floor — class highlights, fight nights,
+              See what&apos;s happening on the floor: class highlights, fight nights,
               and the community we train alongside.
             </p>
             <div className={styles.preFooterSocials}>

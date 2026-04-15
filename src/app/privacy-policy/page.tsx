@@ -3,7 +3,7 @@ import styles from "../site.module.css";
 import SiteFooter from "../_components/SiteFooter";
 
 export const metadata = {
-  title: "Privacy Policy — FIIT Co.",
+  title: "Privacy Policy | FIIT Co.",
   description:
     "How FIIT Co. collects, uses, stores, and protects your personal information. PIPEDA-aligned privacy notice for our Leslieville boxing studio.",
   robots: { index: true, follow: true },
@@ -93,7 +93,7 @@ export default function PrivacyPolicyPage() {
             <p className={styles.body}>
               We do <strong>not</strong> collect credit card numbers, government IDs, health
               records, or membership payment information on this website. Memberships and
-              class bookings are processed by <strong>Mindbody</strong> — see Section 5.
+              class bookings are processed by <strong>Mindbody</strong>. See Section 5.
             </p>
 
             {/* 3 */}
@@ -116,7 +116,7 @@ export default function PrivacyPolicyPage() {
               By submitting one of our forms, you consent to the collection and use described
               above. You can withdraw consent at any time by emailing{" "}
               <a className={styles.inlineLink} href="mailto:info@fiitco.ca">info@fiitco.ca</a>{" "}
-              — we&apos;ll delete your record within a reasonable period (see Section 7).
+              , we&apos;ll delete your record within a reasonable period (see Section 7).
             </p>
 
             <h3 className={styles.legalH3}>4.1 Submitting a friend&apos;s information</h3>
@@ -148,7 +148,7 @@ export default function PrivacyPolicyPage() {
               off to Mindbody&apos;s platform. At that point, Mindbody&apos;s own privacy
               notice governs what they collect (name, email, phone, payment details,
               attendance history). We do not send data from this website&apos;s forms directly
-              to Mindbody — Guest Pass and Refer-A-Friend submissions go to our own private
+              to Mindbody. Guest Pass and Refer-A-Friend submissions go to our own private
               database, not to Mindbody. If you become a full FIIT Co. member through
               Mindbody, we may match your name and phone across both systems so we can apply
               referral credits and manage your membership.
@@ -258,7 +258,7 @@ export default function PrivacyPolicyPage() {
                 <strong>Request deletion</strong> of your data when it is no longer needed.
               </li>
               <li>
-                <strong>File a complaint</strong> with us — and, if you&apos;re not satisfied,
+                <strong>File a complaint</strong> with us, and, if you&apos;re not satisfied,
                 with the{" "}
                 <a
                   className={styles.inlineLink}
@@ -283,7 +283,7 @@ export default function PrivacyPolicyPage() {
             <p className={styles.body}>
               We offer programs for kids ages 7–12 and teens ages 12–17 through FIIT Co. and
               the Boxing Academy. Those programs are booked by a parent or guardian through
-              Mindbody — this website does not enroll children directly. We do not knowingly
+              Mindbody. This website does not enroll children directly. We do not knowingly
               collect personal information from children under 13 on this website. If a parent
               or guardian discovers that a child has submitted information here, email us and
               we&apos;ll delete it.
@@ -302,7 +302,7 @@ export default function PrivacyPolicyPage() {
             {/* 11 */}
             <h2 className={styles.legalH2}>11. Links To Other Sites</h2>
             <p className={styles.body}>
-              Our website links to external services — Mindbody, Instagram, Facebook, Yelp,
+              Our website links to external services: Mindbody, Instagram, Facebook, Yelp,
               and others. Once you leave fiitco.ca, you are subject to those services&apos;
               own privacy policies. We are not responsible for what happens on sites we
               don&apos;t control.

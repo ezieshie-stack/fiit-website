@@ -15,7 +15,7 @@ const SITE_URL = "https://fiitco.ca";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "FIIT Co. — Boxing & Fitness Studio | Leslieville, Toronto",
+    default: "FIIT Co. Boxing & Fitness Studio | Leslieville, Toronto",
     template: "%s | FIIT Co.",
   },
   description:
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     locale: "en_CA",
     url: SITE_URL,
     siteName: "FIIT Co.",
-    title: "FIIT Co. — Boxing & Fitness Studio | Leslieville, Toronto",
+    title: "FIIT Co. Boxing & Fitness Studio | Leslieville, Toronto",
     description:
       "Boutique boxing and fitness studio in Leslieville. Group classes, personal training, Boxing Academy. You're Worth The Fight.",
     images: [
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "FIIT Co. — Boxing & Fitness Studio | Leslieville, Toronto",
+    title: "FIIT Co. Boxing & Fitness Studio | Leslieville, Toronto",
     description:
       "Boutique boxing and fitness studio in Leslieville. You're Worth The Fight.",
     images: ["/hero/home.webp"],

@@ -532,11 +532,12 @@
 }
 
 .programIncludes li::before {
-  content: '—';
+  content: '•';
   position: absolute;
   left: 0;
   color: #D92B2B;
-  font-size: 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1;
 }
 
 .programWho {
