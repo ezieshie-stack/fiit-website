@@ -1,9 +1,19 @@
+import Image from "next/image";
 import styles from "../site.module.css";
 import SiteFooter from "../_components/SiteFooter";
 
 export const metadata = {
-  title: "Studio — FIIT Co.",
-  description: "Visit FIIT Co. at 1047 Gerrard St E in Leslieville. Hours, equipment, and contact.",
+  title: "The Studio",
+  description:
+    "Visit FIIT Co. at 1047 Gerrard St E in Leslieville, Toronto. 6,000 sq ft boxing and fitness floor. Hours, equipment, gallery, and contact.",
+  alternates: { canonical: "https://fiitco.ca/studio" },
+  openGraph: {
+    title: "The Studio — FIIT Co.",
+    description:
+      "1047 Gerrard St E in Leslieville. Open 7 days. Boxing, strength, and conditioning on one training floor.",
+    url: "https://fiitco.ca/studio",
+    images: [{ url: "/studio/interior-1.jpg", alt: "FIIT Co. studio interior" }],
+  },
 };
 
 const HOURS = [
@@ -86,6 +96,43 @@ export default function StudioPage() {
       </section>
 
       <section className={styles.sectionDark}>
+        <div className={styles.container}>
+          <div className={styles.label}>The Floor</div>
+          <h2 className={styles.headlineLg} style={{ marginBottom: "1.5rem" }}>
+            Inside The Studio.
+          </h2>
+          <p className={styles.bodyLg} style={{ maxWidth: "720px", marginBottom: "3rem" }}>
+            Above The Vatican Gift Shop, corner of Gerrard and Jones. An open,
+            boutique layout designed so classes flow from skill work to
+            conditioning without breaking rhythm.
+          </p>
+          <div className={styles.galleryGrid}>
+            <div className={`${styles.galleryItem} ${styles.galleryTall}`}>
+              <Image src="/studio/interior-1.jpg" alt="FIIT Co. training floor" fill sizes="(max-width: 860px) 100vw, 33vw" style={{ objectFit: "cover" }} />
+            </div>
+            <div className={styles.galleryItem}>
+              <Image src="/studio/interior-2.jpg" alt="FIIT Co. heavy bags" fill sizes="(max-width: 860px) 50vw, 33vw" style={{ objectFit: "cover" }} />
+            </div>
+            <div className={styles.galleryItem}>
+              <Image src="/studio/interior-3.jpg" alt="FIIT Co. strength area" fill sizes="(max-width: 860px) 50vw, 33vw" style={{ objectFit: "cover" }} />
+            </div>
+            <div className={styles.galleryItem}>
+              <Image src="/studio/interior-4.jpg" alt="FIIT Co. equipment" fill sizes="(max-width: 860px) 50vw, 33vw" style={{ objectFit: "cover" }} />
+            </div>
+            <div className={styles.galleryItem}>
+              <Image src="/studio/interior-5.jpg" alt="FIIT Co. open layout" fill sizes="(max-width: 860px) 50vw, 33vw" style={{ objectFit: "cover" }} />
+            </div>
+            <div className={styles.galleryItem}>
+              <Image src="/studio/interior-6.jpg" alt="FIIT Co. boxing floor" fill sizes="(max-width: 860px) 50vw, 33vw" style={{ objectFit: "cover" }} />
+            </div>
+            <div className={styles.galleryItem}>
+              <Image src="/studio/interior-7.jpg" alt="FIIT Co. conditioning space" fill sizes="(max-width: 860px) 50vw, 33vw" style={{ objectFit: "cover" }} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.section}>
         <div className={styles.container}>
           <div className={styles.label}>Equipment</div>
           <h2 className={styles.headlineLg} style={{ marginBottom: "4rem" }}>
