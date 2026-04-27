@@ -1,33 +1,25 @@
 import Link from "next/link";
 import styles from "../site.module.css";
-import SiteFooter from "../_components/SiteFooter";
+import LegalDocLive from "@/components/ui/legal-doc-live";
 
 export const metadata = {
-  title: "Privacy Policy | FIIT Co.",
+  title: "Privacy Policy",
   description:
     "How FIIT Co. collects, uses, stores, and protects your personal information. PIPEDA-aligned privacy notice for our Leslieville boxing studio.",
   robots: { index: true, follow: true },
 };
 
-const EFFECTIVE_DATE = "April 13, 2026";
-const LAST_UPDATED = "April 13, 2026";
+// Static fallback values. Used until/unless Arden saves a custom version
+// from the staff portal at /website-legal-docs.
+const STATIC_EFFECTIVE_DATE = "April 13, 2026";
 
 export default function PrivacyPolicyPage() {
   return (
-    <>
-      <header className={styles.pageHeader}>
-        <div className={styles.pageHeaderInner}>
-          <div className={styles.label}>Legal</div>
-          <h1 className={styles.headlineLg}>Privacy Policy.</h1>
-          <p className={styles.bodyLg} style={{ marginTop: "1.5rem", color: "rgba(255,255,255,0.6)" }}>
-            Effective: {EFFECTIVE_DATE} · Last updated: {LAST_UPDATED}
-          </p>
-        </div>
-      </header>
-
-      <section className={styles.section}>
-        <div className={styles.container} style={{ maxWidth: "820px" }}>
-          <div className={styles.legalBody}>
+    <LegalDocLive
+      slug="privacy-policy"
+      staticTitle="Privacy Policy."
+      staticEffectiveDate={STATIC_EFFECTIVE_DATE}
+      staticBody={<>
             <p className={styles.bodyLg}>
               FIIT Co. (&ldquo;<strong>FIIT Co.</strong>,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;
               or &ldquo;our&rdquo;) respects your privacy. This policy explains what personal
@@ -341,11 +333,8 @@ export default function PrivacyPolicyPage() {
                 ← Back to home
               </Link>
             </p>
-          </div>
-        </div>
-      </section>
-
-      <SiteFooter />
-    </>
+        </>
+      }
+    />
   );
 }

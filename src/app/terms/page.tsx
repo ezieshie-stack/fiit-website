@@ -1,37 +1,26 @@
 import Link from "next/link";
 import styles from "../site.module.css";
-import SiteFooter from "../_components/SiteFooter";
+import LegalDocLive from "@/components/ui/legal-doc-live";
 
 export const metadata = {
-  title: "Terms of Use | FIIT Co.",
+  title: "Terms of Use",
   description:
     "Terms of use for fiitco.ca. Acceptable use, intellectual property, referral rules, liability, and governing law for FIIT Co.'s website and online forms.",
   alternates: { canonical: "https://fiitco.ca/terms" },
   robots: { index: true, follow: true },
 };
 
-const EFFECTIVE_DATE = "April 13, 2026";
-const LAST_UPDATED = "April 13, 2026";
+// Static fallback values. Used until/unless Arden saves a custom version
+// from the staff portal at /website-legal-docs.
+const STATIC_EFFECTIVE_DATE = "April 13, 2026";
 
 export default function TermsPage() {
   return (
-    <>
-      <header className={styles.pageHeader}>
-        <div className={styles.pageHeaderInner}>
-          <div className={styles.label}>Legal</div>
-          <h1 className={styles.headlineLg}>Terms of Use.</h1>
-          <p
-            className={styles.bodyLg}
-            style={{ marginTop: "1.5rem", color: "rgba(255,255,255,0.6)" }}
-          >
-            Effective: {EFFECTIVE_DATE} · Last updated: {LAST_UPDATED}
-          </p>
-        </div>
-      </header>
-
-      <section className={styles.section}>
-        <div className={styles.container} style={{ maxWidth: "820px" }}>
-          <div className={styles.legalBody}>
+    <LegalDocLive
+      slug="terms"
+      staticTitle="Terms of Use."
+      staticEffectiveDate={STATIC_EFFECTIVE_DATE}
+      staticBody={<>
             <p className={styles.bodyLg}>
               These Terms of Use (&ldquo;<strong>Terms</strong>&rdquo;) govern your
               access to and use of <strong>fiitco.ca</strong> and any forms, content, or
@@ -303,11 +292,8 @@ export default function TermsPage() {
                 ← Back to home
               </Link>
             </p>
-          </div>
-        </div>
-      </section>
-
-      <SiteFooter />
-    </>
+        </>
+      }
+    />
   );
 }

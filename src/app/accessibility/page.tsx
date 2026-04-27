@@ -1,36 +1,26 @@
 import Link from "next/link";
 import styles from "../site.module.css";
-import SiteFooter from "../_components/SiteFooter";
+import LegalDocLive from "@/components/ui/legal-doc-live";
 
 export const metadata = {
-  title: "Accessibility | FIIT Co.",
+  title: "Accessibility",
   description:
     "FIIT Co.'s commitment to digital and in-studio accessibility. WCAG 2.1 AA targets, known limitations, and how to request assistance or report a barrier.",
   alternates: { canonical: "https://fiitco.ca/accessibility" },
   robots: { index: true, follow: true },
 };
 
-const LAST_UPDATED = "April 13, 2026";
+// Static fallback values. Used until/unless Arden saves a custom version
+// from the staff portal at /website-legal-docs.
+const STATIC_EFFECTIVE_DATE = "April 13, 2026";
 
 export default function AccessibilityPage() {
   return (
-    <>
-      <header className={styles.pageHeader}>
-        <div className={styles.pageHeaderInner}>
-          <div className={styles.label}>Legal</div>
-          <h1 className={styles.headlineLg}>Accessibility.</h1>
-          <p
-            className={styles.bodyLg}
-            style={{ marginTop: "1.5rem", color: "rgba(255,255,255,0.6)" }}
-          >
-            Last updated: {LAST_UPDATED}
-          </p>
-        </div>
-      </header>
-
-      <section className={styles.section}>
-        <div className={styles.container} style={{ maxWidth: "820px" }}>
-          <div className={styles.legalBody}>
+    <LegalDocLive
+      slug="accessibility"
+      staticTitle="Accessibility."
+      staticEffectiveDate={STATIC_EFFECTIVE_DATE}
+      staticBody={<>
             <p className={styles.bodyLg}>
               FIIT Co. is committed to making our studio and website usable by as many
               people as possible, regardless of ability. Training is for everyone, and
@@ -232,11 +222,8 @@ export default function AccessibilityPage() {
                 ← Back to home
               </Link>
             </p>
-          </div>
-        </div>
-      </section>
-
-      <SiteFooter />
-    </>
+        </>
+      }
+    />
   );
 }
