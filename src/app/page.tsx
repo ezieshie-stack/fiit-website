@@ -1,24 +1,24 @@
 import Link from "next/link";
-import Image from "next/image";
 import styles from "./site.module.css";
 import CtaSection from "./_components/CtaSection";
 import SiteFooter from "./_components/SiteFooter";
-import TestimonialsSection, {
-  type Testimonial,
-} from "@/components/ui/testimonials-section";
-import TeamShowcase from "@/components/ui/team-showcase";
-import VideoTestimonials, {
-  type VideoTestimonial,
-} from "@/components/ui/video-testimonials";
+import { type Testimonial } from "@/components/ui/testimonials-section";
+import { type TeamMember } from "@/components/ui/team-showcase";
+import LiveImage from "@/components/ui/live-image";
+import LiveTeamShowcase from "@/components/ui/live-team-showcase";
+import LiveTestimonials from "@/components/ui/live-testimonials";
+import LiveFAQ, { type FaqItem } from "@/components/ui/live-faq";
+import ScheduleWidget from "@/components/ui/schedule-widget";
+import PromoSlot from "@/components/ui/promo-slot";
+import { MINDBODY_INTRO_OFFER_URL } from "@/lib/mindbody";
 import { TRAINERS } from "./_data/trainers";
 
-const MINDBODY_URL =
-  "https://www.mindbodyonline.com/explore/deals/fiit-co/intro-offer-10377";
+// Static fallbacks — rendered when their Convex counterparts have no data
+// yet or are still loading. Keeps SSR / SEO showing real content, and
+// means the home page never shows an empty section after a deploy.
+//
+// Each `Live*` component takes `fallback={…}` for exactly this reason.
 
-
-// Member testimonials — consumed by <TestimonialsSection> (axorax/testimonials-1
-// reimplemented in CSS Modules). `role` distinguishes longtime members from
-// first-timers so the quote has social proof context.
 const TESTIMONIALS: Testimonial[] = [
   {
     name: "Ahmed A.",
@@ -58,49 +58,7 @@ const TESTIMONIALS: Testimonial[] = [
   },
 ];
 
-// Video testimonials — ported from the old Squarespace site section
-// ("We know we make your experience great. But don't take our word for it.").
-// Posters live under /public/testimonials/<id>.jpg and should be portrait
-// (3:4 roughly). Each entry currently has videoId: null — cards render in
-// "Coming Soon" mode until Arden sends the real YouTube IDs or video files.
-//
-// TO ACTIVATE a card: set videoId to the YouTube ID (e.g. "abcd1234EFG"),
-// OR set videoSrc to a direct MP4/webm URL. Either will light up the
-// modal lightbox and make the card clickable.
-const VIDEO_TESTIMONIALS: VideoTestimonial[] = [
-  {
-    id: "joanne",
-    name: "Joanne",
-    poster: "/testimonials/joanne.jpg",
-    videoId: null,
-  },
-  {
-    id: "jack",
-    name: "Jack",
-    poster: "/testimonials/jack.jpg",
-    videoId: null,
-  },
-  {
-    id: "heather",
-    name: "Heather",
-    poster: "/testimonials/heather.jpg",
-    videoId: null,
-  },
-  {
-    id: "tarek-rashi",
-    name: "Tarek & Rashi",
-    poster: "/testimonials/tarek-rashi.jpg",
-    videoId: null,
-  },
-  {
-    id: "tyler",
-    name: "Tyler",
-    poster: "/testimonials/tyler.jpg",
-    videoId: null,
-  },
-];
-
-const FAQS = [
+const FAQS: FaqItem[] = [
   {
     q: "Do I need boxing or fight training experience to take a class?",
     a: "Absolutely not. Our classes are designed for all levels from beginner to advanced. Each class goes over technique and form so you have the tools you need to succeed. The most important thing is that you work hard and have fun.",
@@ -123,14 +81,23 @@ const FAQS = [
   },
 ];
 
+// FIIT team (homepage grid) vs. Boxing Academy head coach (dedicated card).
+// Convex trainers carry a `category` field — "fiit" | "academy" — and
+// <LiveTeamShowcase category="…"/> filters by it. Static fallbacks here
+// split the git TRAINERS roster the same way so SSR looks right.
+const FIIT_TEAM_FALLBACK: TeamMember[] = TRAINERS.filter((t) => t.id !== "nick");
+const ACADEMY_HEAD_COACH_FALLBACK: TeamMember[] = TRAINERS.filter((t) => t.id === "nick");
+
 export default function HomePage() {
   return (
     <>
+      {/* ── Hero ─────────────────────────────────────────────────── */}
       <section className={styles.hero}>
         <div className={styles.heroBgImage}>
-          <Image
-            src="/hero/home.webp"
-            alt=""
+          <LiveImage
+            slot="home-hero"
+            fallbackSrc="/hero/home.webp"
+            fallbackAlt=""
             fill
             priority
             sizes="100vw"
@@ -139,18 +106,15 @@ export default function HomePage() {
         </div>
         <div className={styles.heroWatermark}>FIIT</div>
         <div className={styles.heroInner}>
-          <div className={styles.label}>Est. Toronto · Leslieville</div>
+          <div className={styles.label}>Leslieville · Toronto</div>
           <h1 className={styles.headlineXl}>
-            You're Worth<br />The Fight.
+            Toronto&apos;s Boutique<br />Boxing Studio.
           </h1>
-          <p className={styles.heroSub}>
-            A boutique boxing studio in Toronto where fitness meets community,
-            and everyone is welcome.
-          </p>
+          <p className={styles.heroSub}>You&apos;re Worth The Fight.</p>
           <div className={styles.heroBottom}>
             <div className={styles.heroCtas}>
               <a
-                href={MINDBODY_URL}
+                href={MINDBODY_INTRO_OFFER_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={styles.btnRed}
@@ -158,7 +122,7 @@ export default function HomePage() {
                 Book Free Class
               </a>
               <Link href="/programs" className={styles.btnOutline}>
-                Our Programs
+                Programs &amp; Pricing
               </Link>
             </div>
             <div className={styles.heroAddress}>
@@ -169,12 +133,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div className={styles.strip}>
-        <div className={styles.stripText}>
-          Boxing · Strength · Conditioning · Academy · Muay Thai · Yin Yoga · HIIT · Kids · Teens · Private Coaching
-        </div>
-      </div>
+      {/* ── Class Schedule — live from staff portal Convex ────────── */}
+      <ScheduleWidget />
 
+      {/* ── The Approach ──────────────────────────────────────────── */}
       <section className={styles.section}>
         <div className={styles.container}>
           <div className={styles.label}>The Approach</div>
@@ -186,16 +148,16 @@ export default function HomePage() {
               <div className={styles.pillarNum}>01</div>
               <h3 className={styles.pillarTitle}>Boxing First</h3>
               <p className={styles.body}>
-                Everything at FIIT is built around the sweet science. Real technique,
-                real coaching, real fighters on the floor.
+                Everything at FIIT is built around the sweet science. Real
+                technique, real coaching, real fighters on the floor.
               </p>
             </div>
             <div className={styles.pillar}>
               <div className={styles.pillarNum}>02</div>
               <h3 className={styles.pillarTitle}>Every Discipline</h3>
               <p className={styles.body}>
-                From boxing to strength to yoga: a full stack of class formats
-                built to progress you in and out of the ring.
+                From boxing to strength to yoga: a full stack of class
+                formats built to progress you in and out of the ring.
               </p>
             </div>
             <div className={styles.pillar}>
@@ -210,24 +172,31 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* MEET THE TEAM — makviesainte/team-showcase (CSS-Modules port) */}
-      <TeamShowcase
+      {/* ── The Team ──────────────────────────────────────────────── */}
+      <LiveTeamShowcase
         badge="The Team"
         title="Coaches Who Coach For Real."
-        members={TRAINERS}
+        category="fiit"
+        fallback={FIIT_TEAM_FALLBACK}
       />
 
-      {/* TESTIMONIALS — axorax/testimonials-1 (CSS-Modules port) */}
-      <TestimonialsSection
+      {/* ── FIIT Boxing Academy — head coach ─────────────────────── */}
+      <LiveTeamShowcase
+        badge="FIIT Boxing Academy"
+        title="Head Coach."
+        category="academy"
+        fallback={ACADEMY_HEAD_COACH_FALLBACK}
+      />
+
+      {/* ── Testimonials ─────────────────────────────────────────── */}
+      <LiveTestimonials
         badgeText="Members Talk"
         title="Don't Take Our Word For It."
         subtitle="Real members, real reviews. This is what training at FIIT Co. feels like."
-        testimonials={TESTIMONIALS}
+        fallback={TESTIMONIALS}
       />
 
-      {/* VIDEO TESTIMONIALS — ported from old Squarespace site */}
-      <VideoTestimonials testimonials={VIDEO_TESTIMONIALS} />
-
+      {/* ── Stats ─────────────────────────────────────────────────── */}
       <section className={styles.section}>
         <div className={styles.container}>
           <div className={styles.statsRow}>
@@ -240,7 +209,7 @@ export default function HomePage() {
               <div className={styles.statLabel}>Square Feet</div>
             </div>
             <div className={styles.stat}>
-              <div className={styles.statNum}>11</div>
+              <div className={styles.statNum}>12</div>
               <div className={styles.statLabel}>Class Formats</div>
             </div>
             <div className={styles.stat}>
@@ -251,28 +220,20 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className={styles.sectionDark}>
-        <div className={styles.container}>
-          <div className={styles.label}>You've Got Questions</div>
-          <h2 className={styles.headlineLg} style={{ marginBottom: "4rem" }}>
-            We've Got<br />Answers.
-          </h2>
-          <div className={styles.faqList}>
-            {FAQS.map((faq, i) => (
-              <details key={i} className={styles.faqItem}>
-                <summary className={styles.faqQ}>
-                  <span className={styles.faqNum}>{String(i + 1).padStart(2, "0")}</span>
-                  {faq.q}
-                </summary>
-                <p className={styles.faqA}>{faq.a}</p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ── FAQ ──────────────────────────────────────────────────── */}
+      <LiveFAQ
+        badge="You've Got Questions"
+        title={<>We&apos;ve Got<br />Answers.</>}
+        fallback={FAQS}
+      />
 
+      {/* ── Optional promo video slot — rendered iff Convex has rows ── */}
+      <PromoSlot slot="home:after-faq" />
+
+      {/* ── Member Perks (Guest Pass + Refer A Friend) ────────────── */}
       <CtaSection />
+
+      {/* ── Visit / Contact / Follow / promo-footer / legal footer ── */}
       <SiteFooter />
     </>
   );
