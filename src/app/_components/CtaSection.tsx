@@ -16,7 +16,7 @@ export default function CtaSection() {
         <div className={styles.container}>
           <div className={styles.label}>Member Perks</div>
           <h2 className={styles.headlineLg} style={{ marginBottom: "3.5rem" }}>
-            Share The Glove Love.
+            Share The Fight.
           </h2>
           <div className={styles.ctaGrid}>
             <div className={`${styles.ctaCard} ${styles.ctaCardAccent}`}>
