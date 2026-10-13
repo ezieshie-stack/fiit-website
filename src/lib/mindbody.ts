@@ -7,7 +7,7 @@
 
 /** Shop / full MindBody schedule and reservation funnel. */
 export const MINDBODY_SHOP_URL =
-  "https://clients.mindbodyonline.com/classic/mainclass?studioid=414792&fl=true";
+  "https://clients.mindbodyonline.com/asp/main_shop.asp?fl=true&tabID=3";
 
 /** Intro-offer landing page — first-class-free promo. */
 export const MINDBODY_INTRO_OFFER_URL =

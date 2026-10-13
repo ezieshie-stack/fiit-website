@@ -1,26 +1,29 @@
 "use client";
 
 /**
- * ScheduleWidget — "FIIT Co Schedule." homepage section.
+ * ScheduleWidget
  *
- * Markup and CSS recovered from the live production bundle so the new
- * git-sourced build keeps pixel parity with what customers already see
- * on fiitco.ca. Data source was the one thing missing from the ghost
- * deployment: here it reads the live weekly schedule from the staff
- * portal's Convex deployment via the public `getWeeklySchedule` query,
- * so admins can edit it from staff.fiitco.ca/website-schedule and see
- * the result on fiitco.ca within seconds.
+ * Home-page "FIIT CO SCHEDULE." section. Reads the live weekly schedule
+ * from the staff portal's Convex deployment via the public
+ * `getWeeklySchedule` query and lets visitors toggle through the days of
+ * the current week.
  *
- * Falls back to the four sample classes already live when Convex returns
- * no visible slots for the selected day — section is never empty on a
- * fresh page load, and a small disclaimer appears below the grid when
- * sample data is on screen.
+ * Data flow:
+ *   - If Convex returns slots for the week shown, those render.
+ *   - If Convex is still loading OR has no visible slots for the current
+ *     week, a hardcoded SAMPLE schedule renders so the section is never
+ *     empty on fresh page loads. A small disclaimer appears below the
+ *     grid when sample data is on screen.
+ *
+ * Booking is always handled off-site on MindBody — the "RESERVE" button
+ * on each class and the top-right "Book Via MindBody" CTA both deep-link
+ * to the booking funnel.
  */
 
 import { useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { anyApi } from "convex/server";
-import styles from "./schedule-widget.module.css";
+import styles from "../../app/site.module.css";
 import { MINDBODY_SHOP_URL } from "@/lib/mindbody";
 
 const DAY_SHORT = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] as const;
@@ -29,13 +32,13 @@ type DayIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 type ConvexSlot = {
   _id: string;
   date: string;          // "YYYY-MM-DD"
-  dayOfWeek: string;
-  startTime: string;     // "HH:MM" 24h
+  dayOfWeek: string;     // "Mon" | "Tue" | ...
+  startTime: string;     // "HH:MM"
   endTime: string;
   className: string;
+  categoryName?: string;
   instructorName: string;
-  capacity?: number;
-  status: string;
+  status: string;        // "Scheduled" | "Cancelled" | ...
 };
 
 type DisplaySlot = {
@@ -46,6 +49,11 @@ type DisplaySlot = {
   instructorName: string;
 };
 
+/**
+ * Sample fallback — mirrors the four classes already on the live site so
+ * nothing changes visually when Convex is empty / unreachable. Each entry
+ * is attached to Tue by default (the day shown in the live screenshot).
+ */
 const SAMPLE_SCHEDULE: Record<DayIndex, DisplaySlot[]> = {
   0: sample("Mon"),
   1: sample("Tue"),
@@ -58,10 +66,10 @@ const SAMPLE_SCHEDULE: Record<DayIndex, DisplaySlot[]> = {
 
 function sample(day: string): DisplaySlot[] {
   return [
-    { key: `${day}-1`, startTime: "06:00", endTime: "07:00", className: "FIIT LIFT",                      instructorName: "Sarah Green" },
-    { key: `${day}-2`, startTime: "12:00", endTime: "13:00", className: "FIIT LIFT",                      instructorName: "Jason Battiste" },
-    { key: `${day}-3`, startTime: "17:00", endTime: "18:00", className: "LITTLE WARRIORS PROGRAM (KIDS)", instructorName: "Nick Radionov" },
-    { key: `${day}-4`, startTime: "18:30", endTime: "19:30", className: "FIIT IRON ENGINE FULL BODY",     instructorName: "Jaye Pan" },
+    { key: `${day}-1`, startTime: "06:00", endTime: "07:00", className: "FIIT LIFT",                         instructorName: "Sarah Green" },
+    { key: `${day}-2`, startTime: "12:00", endTime: "13:00", className: "FIIT LIFT",                         instructorName: "Jason Battiste" },
+    { key: `${day}-3`, startTime: "17:00", endTime: "18:00", className: "LITTLE WARRIORS PROGRAM (KIDS)",    instructorName: "Nick Radionov" },
+    { key: `${day}-4`, startTime: "18:30", endTime: "19:30", className: "FIIT IRON ENGINE FULL BODY",        instructorName: "Jaye Pan" },
   ];
 }
 
@@ -71,43 +79,35 @@ function todayIndex(): DayIndex {
   return (((js + 6) % 7) as DayIndex);
 }
 
-/** Split "HH:MM" (24h) into display "H:MM" and "AM"/"PM". */
-function splitTime(time: string): { body: string; ampm: "AM" | "PM" } {
-  const [hStr, m] = time.split(":");
-  const h = Number(hStr);
-  const ampm = h >= 12 ? "PM" : "AM";
-  const hour12 = h % 12 === 0 ? 12 : h % 12;
-  const body = m === "00" ? `${hour12}:00` : `${hour12}:${m}`;
-  return { body, ampm };
+function dayIsoForIndex(index: DayIndex): string {
+  const now = new Date();
+  const todayIsoDay = (((now.getDay() + 6) % 7) as DayIndex);
+  const diff = index - todayIsoDay;
+  const target = new Date(now);
+  target.setDate(now.getDate() + diff);
+  return target.toISOString().split("T")[0];
 }
 
-/** Full range for the instructor line: "6:00-7:00AM". */
-function formatRangeShort(start: string, end: string): string {
-  const s = splitTime(start);
-  const e = splitTime(end);
-  // Ghost format shows one AM/PM at the end if both sides share it,
-  // otherwise both appear. Keep it simple: match the shared case
-  // (which is what every sample slot has) and fall through to both
-  // when they differ.
-  if (s.ampm === e.ampm) {
-    return `${s.body}-${e.body}${e.ampm}`;
-  }
-  return `${s.body}${s.ampm}-${e.body}${e.ampm}`;
+function to12Hour(time: string): { time: string; period: string } {
+  const [hStr, m] = time.split(":");
+  const h = Number(hStr);
+  const period = h >= 12 ? "PM" : "AM";
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  const timeStr = m === "00" ? `${hour12}:00` : `${hour12}:${m}`;
+  return { time: timeStr, period };
 }
 
 export default function ScheduleWidget() {
   const [selected, setSelected] = useState<DayIndex>(todayIndex);
-  const liveSlots = useQuery(anyApi.queries.getWeeklySchedule) as
-    | ConvexSlot[]
-    | undefined;
+  const slots = useQuery(anyApi.queries.getWeeklySchedule) as ConvexSlot[] | undefined;
 
   const liveSlotsByDay = useMemo(() => {
-    if (!liveSlots) return null;
+    if (!slots) return null;
     const map: Record<DayIndex, DisplaySlot[]> = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
-    for (const s of liveSlots) {
+    for (const s of slots) {
       if (s.status === "Cancelled") continue;
       const d = new Date(s.date + "T00:00:00");
-      const idx = (((d.getDay() + 6) % 7) as DayIndex);
+      const idx = ((d.getDay() + 6) % 7) as DayIndex;
       map[idx].push({
         key: s._id,
         startTime: s.startTime,
@@ -120,7 +120,7 @@ export default function ScheduleWidget() {
       map[k].sort((a, b) => a.startTime.localeCompare(b.startTime));
     }
     return map;
-  }, [liveSlots]);
+  }, [slots]);
 
   const hasLiveData =
     liveSlotsByDay !== null &&
@@ -133,30 +133,50 @@ export default function ScheduleWidget() {
   const showSampleDisclaimer = !hasLiveData;
 
   return (
-    <section aria-labelledby="schedule-heading" className={styles.wrapper}>
+    <section
+      className={styles.sectionDark}
+      style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+    >
       <div className={styles.container}>
-        <div className={styles.header}>
+        {/* Header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "1.5rem",
+            marginBottom: "3rem",
+          }}
+        >
           <div>
-            <div className={styles.eyebrow}>Class Schedule</div>
-            <h2 id="schedule-heading" className={styles.title}>
-              FIIT Co<br />
-              Schedule.
+            <div className={styles.label} style={{ marginBottom: "1.25rem" }}>
+              Class Schedule
+            </div>
+            <h2 className={styles.headlineLg} style={{ lineHeight: 0.95 }}>
+              FIIT Co<br />Schedule.
             </h2>
           </div>
           <a
             href={MINDBODY_SHOP_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className={styles.bookBtn}
+            className={styles.btnRed}
           >
             Book Via MindBody
           </a>
         </div>
 
+        {/* Day tabs */}
         <div
-          className={styles.dayTabs}
           role="tablist"
-          aria-label="Schedule day selector"
+          aria-label="Day of the week"
+          style={{
+            display: "flex",
+            gap: "0.5rem",
+            marginBottom: "2.5rem",
+            flexWrap: "wrap",
+          }}
         >
           {DAY_SHORT.map((d, i) => {
             const idx = i as DayIndex;
@@ -168,7 +188,21 @@ export default function ScheduleWidget() {
                 role="tab"
                 aria-selected={active}
                 onClick={() => setSelected(idx)}
-                className={`${styles.dayTab} ${active ? styles.dayTabActive : ""}`}
+                style={{
+                  minWidth: 72,
+                  padding: "0.75rem 1.25rem",
+                  fontFamily: "var(--font-oswald)",
+                  fontWeight: 700,
+                  fontSize: "0.85rem",
+                  letterSpacing: "0.14em",
+                  textAlign: "center",
+                  textTransform: "uppercase",
+                  border: `1px solid ${active ? "#D92B2B" : "rgba(255,255,255,0.18)"}`,
+                  background: active ? "#D92B2B" : "transparent",
+                  color: active ? "#fff" : "rgba(255,255,255,0.78)",
+                  cursor: "pointer",
+                  transition: "border-color 0.15s, background 0.15s, color 0.15s",
+                }}
               >
                 {d}
               </button>
@@ -176,43 +210,127 @@ export default function ScheduleWidget() {
           })}
         </div>
 
+        {/* Rows */}
         {todaySlots.length === 0 ? (
-          <div className={styles.empty}>Rest day.</div>
+          <div
+            style={{
+              padding: "3rem 1rem",
+              textAlign: "center",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: 2,
+            }}
+          >
+            <p
+              style={{
+                fontFamily: "var(--font-oswald)",
+                fontWeight: 700,
+                fontSize: "1.2rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                marginBottom: "0.5rem",
+              }}
+            >
+              Rest day.
+            </p>
+            <p className={styles.bodySm}>No classes scheduled.</p>
+          </div>
         ) : (
-          <div className={styles.slots}>
+          <ul
+            style={{
+              listStyle: "none",
+              margin: 0,
+              padding: 0,
+              display: "flex",
+              flexDirection: "column",
+              borderTop: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
             {todaySlots.map((slot) => {
-              const start = splitTime(slot.startTime);
+              const start = to12Hour(slot.startTime);
+              const end = to12Hour(slot.endTime);
               return (
-                <div key={slot.key} className={styles.slot}>
-                  <div className={styles.slotTime}>
-                    {start.body}
-                    <span className={styles.slotTimeAmPm}>{start.ampm}</span>
+                <li
+                  key={slot.key}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "minmax(120px, 180px) 1fr auto",
+                    alignItems: "center",
+                    gap: "1.5rem",
+                    padding: "1.5rem 1rem",
+                    borderBottom: "1px solid rgba(255,255,255,0.08)",
+                  }}
+                >
+                  {/* Time */}
+                  <div
+                    style={{
+                      fontFamily: "var(--font-oswald)",
+                      fontWeight: 700,
+                      fontSize: "clamp(2rem, 3.5vw, 2.75rem)",
+                      lineHeight: 1,
+                      color: "#fff",
+                    }}
+                  >
+                    {start.time}
+                    <span
+                      style={{
+                        fontSize: "0.5em",
+                        marginLeft: "0.35em",
+                        color: "#D92B2B",
+                      }}
+                    >
+                      {start.period}
+                    </span>
                   </div>
-                  <div className={styles.slotInfo}>
-                    <div className={styles.slotClass}>{slot.className}</div>
-                    <div className={styles.slotInstructor}>
-                      with {slot.instructorName} ·{" "}
-                      {formatRangeShort(slot.startTime, slot.endTime)}
-                    </div>
+
+                  {/* Name + instructor */}
+                  <div>
+                    <p
+                      style={{
+                        fontFamily: "var(--font-oswald)",
+                        fontWeight: 700,
+                        fontSize: "clamp(1.1rem, 2vw, 1.4rem)",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.03em",
+                        marginBottom: "0.35rem",
+                        lineHeight: 1.15,
+                      }}
+                    >
+                      {slot.className}
+                    </p>
+                    <p className={styles.bodySm} style={{ margin: 0 }}>
+                      with {slot.instructorName} · {start.time}{start.period === "AM" ? "AM" : "PM"}
+                      {" – "}
+                      {end.time}{end.period === "AM" ? "AM" : "PM"}
+                    </p>
                   </div>
+
+                  {/* Reserve */}
                   <a
                     href={MINDBODY_SHOP_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={styles.reserveBtn}
+                    className={styles.btnOutline}
+                    style={{ padding: "0.75rem 1.6rem", fontSize: "0.78rem" }}
                   >
                     Reserve
                   </a>
-                </div>
+                </li>
               );
             })}
-          </div>
+          </ul>
         )}
 
         {showSampleDisclaimer && (
-          <div className={styles.fallbackNote}>
-            Sample schedule shown · live bookings via MindBody above
-          </div>
+          <p
+            className={styles.bodySm}
+            style={{
+              marginTop: "1.5rem",
+              textAlign: "center",
+              color: "rgba(255,255,255,0.42)",
+            }}
+          >
+            Sample schedule shown · live bookings via MindBody above.
+          </p>
         )}
       </div>
     </section>
