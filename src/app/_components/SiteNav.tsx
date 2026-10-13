@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/about", label: "About" },
   { href: "/programs", label: "Programs" },
   { href: "/studio", label: "Studio" },
+  { href: "/community", label: "Community" },
   { href: "/blog", label: "Journal" },
 ];
 
