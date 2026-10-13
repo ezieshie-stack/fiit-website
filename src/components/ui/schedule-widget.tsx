@@ -1,338 +1,229 @@
 "use client";
 
 /**
- * ScheduleWidget
+ * Weekly class schedule widget shown on the homepage and Programs page.
  *
- * Home-page "FIIT CO SCHEDULE." section. Reads the live weekly schedule
- * from the staff portal's Convex deployment via the public
- * `getWeeklySchedule` query and lets visitors toggle through the days of
- * the current week.
+ * Data source: `websiteContent:listActiveWebsiteSchedule` on the shared
+ * Convex backend. This is admin-curated from staff.fiitco.ca > Website
+ * UI/UX > Schedule. The widget no longer reads from the operational
+ * `weeklySchedule` table — that's the staff portal's class-management
+ * data and isn't suitable for public display.
  *
- * Data flow:
- *   - If Convex returns slots for the week shown, those render.
- *   - If Convex is still loading OR has no visible slots for the current
- *     week, a hardcoded SAMPLE schedule renders so the section is never
- *     empty on fresh page loads. A small disclaimer appears below the
- *     grid when sample data is on screen.
+ * If the table is empty (e.g., right after deploy, before Arden has
+ * seeded it via the admin "Seed default schedule" button), the widget
+ * falls back to a small built-in template so the homepage never shows
+ * an empty block.
  *
- * Booking is always handled off-site on MindBody — the "RESERVE" button
- * on each class and the top-right "Book Via MindBody" CTA both deep-link
- * to the booking funnel.
+ * "Reserve" / "Book Via MindBody" buttons open the MindBody consumer
+ * schedule. Spots-left / capacity numbers were intentionally removed
+ * from this view — capacity belongs to live booking flows in MindBody,
+ * not to a static template.
  */
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "convex/react";
 import { anyApi } from "convex/server";
-import styles from "../../app/site.module.css";
-import { MINDBODY_SHOP_URL } from "@/lib/mindbody";
+import styles from "./schedule-widget.module.css";
+import { MINDBODY_SCHEDULE_URL } from "@/lib/mindbody";
 
-const DAY_SHORT = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] as const;
-type DayIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6;
-
-type ConvexSlot = {
-  _id: string;
-  date: string;          // "YYYY-MM-DD"
-  dayOfWeek: string;     // "Mon" | "Tue" | ...
-  startTime: string;     // "HH:MM"
-  endTime: string;
-  className: string;
-  categoryName?: string;
-  instructorName: string;
-  status: string;        // "Scheduled" | "Cancelled" | ...
-};
-
-type DisplaySlot = {
-  key: string;
+type Slot = {
+  dayOfWeek: string;
   startTime: string;
   endTime: string;
   className: string;
   instructorName: string;
+  categoryName?: string;
 };
 
-/**
- * Sample fallback — mirrors the four classes already on the live site so
- * nothing changes visually when Convex is empty / unreachable. Each entry
- * is attached to Tue by default (the day shown in the live screenshot).
- */
-const SAMPLE_SCHEDULE: Record<DayIndex, DisplaySlot[]> = {
-  0: sample("Mon"),
-  1: sample("Tue"),
-  2: sample("Wed"),
-  3: sample("Thu"),
-  4: sample("Fri"),
-  5: sample("Sat"),
-  6: sample("Sun"),
+const DAYS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+] as const;
+
+// Day-name aliases — admins may type "Mon" or "Monday" depending on form
+// behaviour, so accept both.
+const DAY_ALIASES: Record<string, string> = {
+  Mon: "Monday", Tue: "Tuesday", Wed: "Wednesday", Thu: "Thursday",
+  Fri: "Friday", Sat: "Saturday", Sun: "Sunday",
 };
 
-function sample(day: string): DisplaySlot[] {
-  return [
-    { key: `${day}-1`, startTime: "06:00", endTime: "07:00", className: "FIIT LIFT",                         instructorName: "Sarah Green" },
-    { key: `${day}-2`, startTime: "12:00", endTime: "13:00", className: "FIIT LIFT",                         instructorName: "Jason Battiste" },
-    { key: `${day}-3`, startTime: "17:00", endTime: "18:00", className: "LITTLE WARRIORS PROGRAM (KIDS)",    instructorName: "Nick Radionov" },
-    { key: `${day}-4`, startTime: "18:30", endTime: "19:30", className: "FIIT IRON ENGINE FULL BODY",        instructorName: "Jaye Pan" },
-  ];
+function normalizeDay(d: string): string {
+  return DAY_ALIASES[d] ?? d;
 }
 
-function todayIndex(): DayIndex {
-  // Mon = 0, Sun = 6. JS Date.getDay(): Sun = 0, Sat = 6.
-  const js = new Date().getDay();
-  return (((js + 6) % 7) as DayIndex);
-}
-
-function dayIsoForIndex(index: DayIndex): string {
-  const now = new Date();
-  const todayIsoDay = (((now.getDay() + 6) % 7) as DayIndex);
-  const diff = index - todayIsoDay;
-  const target = new Date(now);
-  target.setDate(now.getDate() + diff);
-  return target.toISOString().split("T")[0];
-}
-
-function to12Hour(time: string): { time: string; period: string } {
-  const [hStr, m] = time.split(":");
-  const h = Number(hStr);
-  const period = h >= 12 ? "PM" : "AM";
-  const hour12 = h % 12 === 0 ? 12 : h % 12;
-  const timeStr = m === "00" ? `${hour12}:00` : `${hour12}:${m}`;
-  return { time: timeStr, period };
-}
+// Built-in fallback used only when the websiteSchedule table is empty.
+// Transcribed verbatim from the MindBody class schedule on 2026-04-28.
+// Once Arden seeds the table via the admin UI, this is never displayed.
+const FALLBACK_SCHEDULE: Slot[] = [
+  // Monday
+  { dayOfWeek: "Monday", startTime: "06:00", endTime: "06:50", className: "FIIT Hybrid", instructorName: "Jason Battiste" },
+  { dayOfWeek: "Monday", startTime: "10:00", endTime: "11:00", className: "FIIT Hybrid", instructorName: "Jason Battiste" },
+  { dayOfWeek: "Monday", startTime: "12:00", endTime: "12:50", className: "FIIT Hybrid", instructorName: "Jason Battiste" },
+  { dayOfWeek: "Monday", startTime: "16:30", endTime: "17:30", className: "Boxing Academy - Teens Boxing", instructorName: "Nick Radionov" },
+  { dayOfWeek: "Monday", startTime: "17:30", endTime: "18:30", className: "Boxing Academy - Level 1 Technical Boxing", instructorName: "Nick Radionov" },
+  { dayOfWeek: "Monday", startTime: "18:30", endTime: "19:30", className: "FIIT Hybrid", instructorName: "Jason Battiste" },
+  { dayOfWeek: "Monday", startTime: "19:30", endTime: "20:30", className: "Boxing Academy - Level 2 Technical Sparring", instructorName: "Nick Radionov" },
+  // Tuesday
+  { dayOfWeek: "Tuesday", startTime: "06:00", endTime: "07:00", className: "FIIT Lift", instructorName: "Sarah Green" },
+  { dayOfWeek: "Tuesday", startTime: "12:00", endTime: "13:00", className: "FIIT Lift", instructorName: "Jason Battiste" },
+  { dayOfWeek: "Tuesday", startTime: "17:00", endTime: "18:00", className: "Little Warriors Program (Kids)", instructorName: "Nick Radionov" },
+  { dayOfWeek: "Tuesday", startTime: "18:30", endTime: "19:30", className: "FIIT Iron Engine Full Body", instructorName: "Jaye Pan" },
+  // Wednesday
+  { dayOfWeek: "Wednesday", startTime: "06:00", endTime: "06:50", className: "FIIT Hybrid", instructorName: "Sarah Green" },
+  { dayOfWeek: "Wednesday", startTime: "10:00", endTime: "11:00", className: "FIIT Hybrid", instructorName: "Jason Battiste" },
+  { dayOfWeek: "Wednesday", startTime: "12:00", endTime: "13:00", className: "Kickboxing Heavy Bag", instructorName: "Jason Battiste" },
+  { dayOfWeek: "Wednesday", startTime: "18:30", endTime: "19:30", className: "FIIT Boxing Bag Work", instructorName: "Jason Battiste" },
+  { dayOfWeek: "Wednesday", startTime: "19:45", endTime: "20:45", className: "Boxing Academy - Level 1 Intro to Sparring", instructorName: "Nick Radionov" },
+  // Thursday
+  { dayOfWeek: "Thursday", startTime: "06:00", endTime: "06:50", className: "FIIT Caveman Circuit", instructorName: "Sarah Green" },
+  { dayOfWeek: "Thursday", startTime: "12:00", endTime: "13:00", className: "FIIT Lift", instructorName: "Sarah Green" },
+  { dayOfWeek: "Thursday", startTime: "16:30", endTime: "17:30", className: "Boxing Academy - Teens Boxing", instructorName: "Nick Radionov" },
+  { dayOfWeek: "Thursday", startTime: "17:30", endTime: "18:30", className: "FIIT ft. Boxing Academy - Boxing Fundamentals", instructorName: "Nick Radionov" },
+  { dayOfWeek: "Thursday", startTime: "18:30", endTime: "19:30", className: "Boxing Academy - Level 1 Technical Boxing", instructorName: "Nick Radionov" },
+  // Friday
+  { dayOfWeek: "Friday", startTime: "06:00", endTime: "06:50", className: "FIIT Hybrid", instructorName: "Jason Battiste" },
+  { dayOfWeek: "Friday", startTime: "12:00", endTime: "12:45", className: "FIIT Hybrid", instructorName: "Jason Battiste" },
+  // Saturday
+  { dayOfWeek: "Saturday", startTime: "08:00", endTime: "09:00", className: "FIIT Glute Lab", instructorName: "Jaye Pan" },
+  { dayOfWeek: "Saturday", startTime: "09:00", endTime: "10:00", className: "FIIT Boxing Pad Work", instructorName: "Jason Battiste" },
+  { dayOfWeek: "Saturday", startTime: "10:30", endTime: "11:30", className: "FIIT Hybrid", instructorName: "Jason Battiste" },
+  { dayOfWeek: "Saturday", startTime: "12:00", endTime: "13:00", className: "Boxing Academy - Level 1 Technical Boxing", instructorName: "Nick Radionov" },
+  { dayOfWeek: "Saturday", startTime: "13:00", endTime: "14:00", className: "Boxing Academy - Level 2 Technical Sparring", instructorName: "Nick Radionov" },
+  // Sunday
+  { dayOfWeek: "Sunday", startTime: "08:00", endTime: "09:00", className: "FIIT Core & Control & Abs", instructorName: "Jaye Pan" },
+  { dayOfWeek: "Sunday", startTime: "09:00", endTime: "10:00", className: "Kickboxing", instructorName: "Jason Battiste" },
+  { dayOfWeek: "Sunday", startTime: "10:30", endTime: "11:30", className: "FIIT Caveman Circuit", instructorName: "Jason Battiste" },
+];
 
 export default function ScheduleWidget() {
-  const [selected, setSelected] = useState<DayIndex>(todayIndex);
-  const slots = useQuery(anyApi.queries.getWeeklySchedule) as ConvexSlot[] | undefined;
+  const [selectedDay, setSelectedDay] = useState<number>(todayIndex());
+  const live = useQuery(anyApi.websiteContent.listActiveWebsiteSchedule, {});
 
-  const liveSlotsByDay = useMemo(() => {
-    if (!slots) return null;
-    const map: Record<DayIndex, DisplaySlot[]> = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
-    for (const s of slots) {
-      if (s.status === "Cancelled") continue;
-      const d = new Date(s.date + "T00:00:00");
-      const idx = ((d.getDay() + 6) % 7) as DayIndex;
-      map[idx].push({
-        key: s._id,
-        startTime: s.startTime,
-        endTime: s.endTime,
-        className: s.className,
-        instructorName: s.instructorName,
-      });
-    }
-    for (const k of Object.keys(map) as unknown as DayIndex[]) {
-      map[k].sort((a, b) => a.startTime.localeCompare(b.startTime));
-    }
-    return map;
-  }, [slots]);
+  // `live === undefined` while Convex is hydrating. Treat as "use fallback
+  // immediately" so the homepage never flashes empty; real data arrives
+  // and replaces it within a few hundred ms.
+  const liveArray = Array.isArray(live) ? (live as Slot[]) : [];
+  const hasLiveData = liveArray.length > 0;
+  const slots: Slot[] = hasLiveData ? liveArray : FALLBACK_SCHEDULE;
+  const usingFallback = !hasLiveData;
 
-  const hasLiveData =
-    liveSlotsByDay !== null &&
-    Object.values(liveSlotsByDay).some((arr) => arr.length > 0);
-
-  const todaySlots: DisplaySlot[] = hasLiveData
-    ? liveSlotsByDay![selected]
-    : SAMPLE_SCHEDULE[selected];
-
-  const showSampleDisclaimer = !hasLiveData;
+  const currentDay = DAYS[selectedDay];
+  const daySlots = slots
+    .filter((s) => normalizeDay(s.dayOfWeek) === currentDay)
+    .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
   return (
-    <section
-      className={styles.sectionDark}
-      style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
-    >
+    <section className={styles.wrapper} aria-labelledby="schedule-heading">
       <div className={styles.container}>
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: "1.5rem",
-            marginBottom: "3rem",
-          }}
-        >
+        <div className={styles.header}>
           <div>
-            <div className={styles.label} style={{ marginBottom: "1.25rem" }}>
-              Class Schedule
-            </div>
-            <h2 className={styles.headlineLg} style={{ lineHeight: 0.95 }}>
-              FIIT Co<br />Schedule.
+            <div className={styles.eyebrow}>Class Schedule</div>
+            <h2 id="schedule-heading" className={styles.title}>
+              FIIT Co
+              <br />
+              Schedule.
             </h2>
           </div>
           <a
-            href={MINDBODY_SHOP_URL}
+            href={MINDBODY_SCHEDULE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className={styles.btnRed}
+            className={styles.bookBtn}
           >
             Book Via MindBody
           </a>
         </div>
 
-        {/* Day tabs */}
-        <div
-          role="tablist"
-          aria-label="Day of the week"
-          style={{
-            display: "flex",
-            gap: "0.5rem",
-            marginBottom: "2.5rem",
-            flexWrap: "wrap",
-          }}
-        >
-          {DAY_SHORT.map((d, i) => {
-            const idx = i as DayIndex;
-            const active = idx === selected;
-            return (
-              <button
-                key={d}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => setSelected(idx)}
-                style={{
-                  minWidth: 72,
-                  padding: "0.75rem 1.25rem",
-                  fontFamily: "var(--font-oswald)",
-                  fontWeight: 700,
-                  fontSize: "0.85rem",
-                  letterSpacing: "0.14em",
-                  textAlign: "center",
-                  textTransform: "uppercase",
-                  border: `1px solid ${active ? "#D92B2B" : "rgba(255,255,255,0.18)"}`,
-                  background: active ? "#D92B2B" : "transparent",
-                  color: active ? "#fff" : "rgba(255,255,255,0.78)",
-                  cursor: "pointer",
-                  transition: "border-color 0.15s, background 0.15s, color 0.15s",
-                }}
-              >
-                {d}
-              </button>
-            );
-          })}
+        <div className={styles.dayTabs} role="tablist" aria-label="Schedule day selector">
+          {DAYS.map((day, i) => (
+            <button
+              key={day}
+              type="button"
+              role="tab"
+              aria-selected={i === selectedDay}
+              className={`${styles.dayTab} ${
+                i === selectedDay ? styles.dayTabActive : ""
+              }`}
+              onClick={() => setSelectedDay(i)}
+            >
+              {day.slice(0, 3).toUpperCase()}
+            </button>
+          ))}
         </div>
 
-        {/* Rows */}
-        {todaySlots.length === 0 ? (
-          <div
-            style={{
-              padding: "3rem 1rem",
-              textAlign: "center",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: 2,
-            }}
-          >
-            <p
-              style={{
-                fontFamily: "var(--font-oswald)",
-                fontWeight: 700,
-                fontSize: "1.2rem",
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-                marginBottom: "0.5rem",
-              }}
-            >
-              Rest day.
-            </p>
-            <p className={styles.bodySm}>No classes scheduled.</p>
-          </div>
-        ) : (
-          <ul
-            style={{
-              listStyle: "none",
-              margin: 0,
-              padding: 0,
-              display: "flex",
-              flexDirection: "column",
-              borderTop: "1px solid rgba(255,255,255,0.08)",
-            }}
-          >
-            {todaySlots.map((slot) => {
-              const start = to12Hour(slot.startTime);
-              const end = to12Hour(slot.endTime);
-              return (
-                <li
-                  key={slot.key}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "minmax(120px, 180px) 1fr auto",
-                    alignItems: "center",
-                    gap: "1.5rem",
-                    padding: "1.5rem 1rem",
-                    borderBottom: "1px solid rgba(255,255,255,0.08)",
-                  }}
+        <div className={styles.slots}>
+          {daySlots.length === 0 ? (
+            <div className={styles.empty}>
+              No classes scheduled for {currentDay}.
+            </div>
+          ) : (
+            daySlots.map((slot, i) => (
+              <div key={`${slot.startTime}-${i}`} className={styles.slot}>
+                <div className={styles.slotTime}>
+                  {formatTimeShort(slot.startTime)}
+                  <span className={styles.slotTimeAmPm}>
+                    {ampmFor(slot.startTime)}
+                  </span>
+                </div>
+                <div className={styles.slotInfo}>
+                  <div className={styles.slotClass}>
+                    {slot.className.toUpperCase()}
+                  </div>
+                  <div className={styles.slotInstructor}>
+                    with {slot.instructorName} ·{" "}
+                    {formatRange(slot.startTime, slot.endTime)}
+                  </div>
+                </div>
+                <a
+                  href={MINDBODY_SCHEDULE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.reserveBtn}
                 >
-                  {/* Time */}
-                  <div
-                    style={{
-                      fontFamily: "var(--font-oswald)",
-                      fontWeight: 700,
-                      fontSize: "clamp(2rem, 3.5vw, 2.75rem)",
-                      lineHeight: 1,
-                      color: "#fff",
-                    }}
-                  >
-                    {start.time}
-                    <span
-                      style={{
-                        fontSize: "0.5em",
-                        marginLeft: "0.35em",
-                        color: "#D92B2B",
-                      }}
-                    >
-                      {start.period}
-                    </span>
-                  </div>
+                  Reserve
+                </a>
+              </div>
+            ))
+          )}
+        </div>
 
-                  {/* Name + instructor */}
-                  <div>
-                    <p
-                      style={{
-                        fontFamily: "var(--font-oswald)",
-                        fontWeight: 700,
-                        fontSize: "clamp(1.1rem, 2vw, 1.4rem)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.03em",
-                        marginBottom: "0.35rem",
-                        lineHeight: 1.15,
-                      }}
-                    >
-                      {slot.className}
-                    </p>
-                    <p className={styles.bodySm} style={{ margin: 0 }}>
-                      with {slot.instructorName} · {start.time}{start.period === "AM" ? "AM" : "PM"}
-                      {" – "}
-                      {end.time}{end.period === "AM" ? "AM" : "PM"}
-                    </p>
-                  </div>
-
-                  {/* Reserve */}
-                  <a
-                    href={MINDBODY_SHOP_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.btnOutline}
-                    style={{ padding: "0.75rem 1.6rem", fontSize: "0.78rem" }}
-                  >
-                    Reserve
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-
-        {showSampleDisclaimer && (
-          <p
-            className={styles.bodySm}
-            style={{
-              marginTop: "1.5rem",
-              textAlign: "center",
-              color: "rgba(255,255,255,0.42)",
-            }}
-          >
-            Sample schedule shown · live bookings via MindBody above.
-          </p>
+        {usingFallback && (
+          <div className={styles.fallbackNote}>
+            Sample schedule shown · live bookings via MindBody above
+          </div>
         )}
       </div>
     </section>
   );
+}
+
+// ─── helpers ──────────────────────────────────────────────────────────────
+
+function todayIndex(): number {
+  // JS Date.getDay(): 0 = Sunday. Our DAYS array starts Monday.
+  const js = new Date().getDay();
+  return js === 0 ? 6 : js - 1;
+}
+
+function formatTimeShort(time: string): string {
+  // "06:00" → "6:00"  ·  "14:30" → "2:30"  ·  "00:00" → "12:00"
+  const [h, m] = time.split(":");
+  let hour = parseInt(h, 10);
+  if (hour === 0) hour = 12;
+  else if (hour > 12) hour -= 12;
+  return `${hour}:${m}`;
+}
+
+function ampmFor(time: string): string {
+  const [h] = time.split(":");
+  return parseInt(h, 10) < 12 ? "AM" : "PM";
+}
+
+function formatRange(start: string, end: string): string {
+  return `${formatTimeShort(start)}-${formatTimeShort(end)}${ampmFor(end)}`;
 }

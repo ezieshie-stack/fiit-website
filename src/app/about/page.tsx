@@ -1,8 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
+import LiveImage from "@/components/ui/live-image";
 import styles from "../site.module.css";
 import SiteFooter from "../_components/SiteFooter";
-import { TRAINERS } from "../_data/trainers";
+import LiveTrainerList from "@/components/ui/live-trainer-list";
+import PromoSlot from "@/components/ui/promo-slot";
 
 export const metadata = {
   title: "About",
@@ -18,17 +20,60 @@ export const metadata = {
   },
 };
 
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://fiitco.ca" },
+    { "@type": "ListItem", position: 2, name: "About", item: "https://fiitco.ca/about" },
+  ],
+};
+
+// Trainer rendering moved to <LiveTrainerList/> (client component) which
+// reads from Convex and handles both the FIIT + Academy split, plus all
+// the per-row JSX including alternating layout. Edit trainer data via the
+// ops tool's Website Trainers admin page, not this file.
+
 export default function AboutPage() {
   return (
     <>
-      <header className={styles.pageHeader}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <header className={styles.pageHeaderImg}>
+        <div className={styles.pageHeaderBgImage}>
+          <LiveImage
+            slot="about-hero"
+            fallbackSrc="/placeholders/hero-about.jpg"
+            fallbackAlt="Boxer leaning on the ropes inside the ring at FIIT Co. Leslieville"
+            fill
+            priority
+            sizes="100vw"
+            style={{ objectFit: "cover" }}
+          />
+        </div>
         <div className={styles.pageHeaderInner}>
-          <div className={styles.label}>About</div>
+          <div className={styles.label}>Our Story</div>
           <h1 className={styles.headlineLg}>
-            Built By Fighters.<br />Run For Everyone.
+            A Toronto Boxing Studio,<br />Built By A Champion.
           </h1>
+          <p
+            style={{
+              maxWidth: "720px",
+              marginTop: "1.5rem",
+              fontSize: "1.125rem",
+              color: "rgba(255,255,255,0.88)",
+              lineHeight: 1.6,
+            }}
+          >
+            FIIT Co is a boutique boxing studio in Leslieville, Toronto,
+            where fitness meets community, and everyone is welcome.
+          </p>
         </div>
       </header>
+
+      <PromoSlot name="about:after-hero" />
 
       <section className={styles.section}>
         <div className={styles.container}>
@@ -39,15 +84,16 @@ export default function AboutPage() {
                 A Community Where Everyone Thrives.
               </h2>
               <p className={styles.bodyLg} style={{ marginBottom: "1.5rem" }}>
-                At FIIT Co., we're dedicated to creating a community where everyone
-                thrives. Our fitness studio in Toronto, ON combines expert fight
-                training with a dynamic and welcoming environment.
+                FIIT Co. is a boutique boxing and fitness studio in Leslieville,
+                Toronto. We&apos;re building a boxing community where first-timers
+                and working fighters train on the same floor, coached by people
+                who have spent their lives in the sport.
               </p>
               <p className={styles.body}>
-                This is where you'll push your limits, test your boundaries, and
-                discover your inner champion. FIIT Co. offers an intimate, boutique
-                space with a spacious open layout designed to maximize your training
-                experience.
+                This is where you&apos;ll push your limits, test your boundaries,
+                and discover what you&apos;re actually capable of. A 2,500 sq ft
+                open training floor with heavy bags, strength tools, and the
+                room you need to move.
               </p>
             </div>
             <div>
@@ -59,9 +105,8 @@ export default function AboutPage() {
                 <span className={styles.accent}>Stop when you're done.</span>
               </p>
               <p className={styles.body} style={{ marginBottom: "1.25rem" }}>
-                That's the standard founder Jason Battiste, a former Canadian Super
-                Middleweight Kickboxing Champion with 37+ years of combat experience,
-                built this studio on.
+                That's the standard that founder Jason Battiste, a former Canadian
+                Super Middleweight Kickboxing Champion, built this studio on.
               </p>
               <p className={styles.body}>
                 Real coaching. Real technique. A room that welcomes first-timers and
@@ -76,7 +121,7 @@ export default function AboutPage() {
         <div className={styles.container}>
           <div className={styles.label}>The Room</div>
           <h2 className={styles.headlineLg} style={{ marginBottom: "3rem" }}>
-            6,000 Square Feet<br />Of Work To Do.
+            2,500 Square Feet<br />Of Work To Do.
           </h2>
           <p className={styles.bodyLg} style={{ maxWidth: "820px", marginBottom: "3rem" }}>
             Traditional fight gear (heavy bags, focus pads, ground and pound
@@ -96,6 +141,8 @@ export default function AboutPage() {
         </div>
       </section>
 
+      <PromoSlot name="about:after-story" />
+
       {/* MEET THE TEAM — detail section with per-trainer anchors.
           Homepage team cards link to /about#trainer-<id> so visitors
           land on the right bio when they click through. */}
@@ -106,68 +153,14 @@ export default function AboutPage() {
             The Coaches On<br />Your Corner.
           </h2>
 
-          <div className={styles.trainerList}>
-            {TRAINERS.map((t, i) => {
-              const paragraphs = t.fullBio && t.fullBio.length > 0
-                ? t.fullBio
-                : t.bio
-                ? [t.bio]
-                : [];
-              // Alternate left/right layout so the page has rhythm
-              // instead of a stack of identical cards.
-              const reversed = i % 2 === 1;
-              return (
-                <article
-                  key={t.id}
-                  id={`trainer-${t.id}`}
-                  className={`${styles.trainerRow} ${
-                    reversed ? styles.trainerRowReversed : ""
-                  }`}
-                >
-                  <div className={styles.trainerPortrait}>
-                    {t.img ? (
-                      <Image
-                        src={t.img}
-                        alt={t.name}
-                        fill
-                        sizes="(max-width: 860px) 100vw, 40vw"
-                        style={{ objectFit: "cover" }}
-                      />
-                    ) : (
-                      <div className={styles.trainerPortraitFallback}>
-                        {t.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </div>
-                    )}
-                  </div>
-                  <div className={styles.trainerContent}>
-                    <div className={styles.trainerRoleLabel}>{t.role}</div>
-                    <h3 className={styles.trainerNameBig}>{t.name}</h3>
-                    {t.tags && t.tags.length > 0 && (
-                      <div className={styles.trainerTagRow}>
-                        {t.tags.map((tag) => (
-                          <span key={tag} className={styles.trainerTagChip}>
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    <div className={styles.trainerParagraphs}>
-                      {paragraphs.map((para, idx) => (
-                        <p key={idx} className={styles.body}>
-                          {para}
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
+          {/* Live trainer list — reads from Convex, falls back to static
+              roster if Convex is unreachable. Handles the FIIT + Academy
+              split, alternating row layout, and per-trainer anchors. */}
+          <LiveTrainerList />
         </div>
       </section>
+
+      <PromoSlot name="about:after-team" />
 
       <SiteFooter />
     </>
