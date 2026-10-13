@@ -10,7 +10,7 @@ import type { NextConfig } from "next";
  * Categories:
  *   - Pricing / classes / memberships → /programs
  *   - Trainers / team / coaches → /about
- *   - Schedule → /programs (the schedule widget lives there)
+ *   - Timetable → /schedule (the live weekly grid)
  *   - Booking / signup / login / shop / gift cards → Mindbody
  *   - Contact / location → /studio
  *   - Testimonials / FAQ → /community
@@ -41,9 +41,8 @@ const nextConfig: NextConfig = {
       { source: "/boxing-academy",     destination: "/programs", permanent: true },
       { source: "/academy",            destination: "/programs", permanent: true },
 
-      // ── Schedule (schedule widget lives on Programs) ───────────────
-      { source: "/schedule",           destination: "/programs", permanent: true },
-      { source: "/timetable",          destination: "/programs", permanent: true },
+      // ── Timetable → the real /schedule page ───────────────────────
+      { source: "/timetable",          destination: "/schedule", permanent: true },
 
       // ── Trainers / team / coaches → /about ─────────────────────────
       { source: "/trainers",           destination: "/about", permanent: true },
