@@ -73,7 +73,7 @@ export default function SiteNav() {
         </ul>
         <div className={styles.navRight}>
           <a
-            href={MINDBODY_SCHEDULE_URL}
+            href={MINDBODY_SHOP_URL}
             target="_blank"
             rel="noopener noreferrer"
             className={styles.navCta}

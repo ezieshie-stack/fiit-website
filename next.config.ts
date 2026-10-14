@@ -19,8 +19,12 @@ import type { NextConfig } from "next";
  * matching entry. To check: Search Console > Pages > "Not found (404)".
  */
 
+// MindBody shop URL. Must include `studioid=414792` — without it,
+// first-time visitors with no MindBody cookie land on MindBody's generic
+// "find your studio" search page at /launch instead of FIIT Co.'s shop.
+// Keep this in sync with MINDBODY_SHOP_URL in src/lib/mindbody.ts.
 const MINDBODY_URL =
-  "https://clients.mindbodyonline.com/asp/main_shop.asp?fl=true&tabID=3";
+  "https://clients.mindbodyonline.com/asp/main_shop.asp?studioid=414792&fl=true&tabID=3";
 
 const nextConfig: NextConfig = {
   async redirects() {
@@ -82,8 +86,12 @@ const nextConfig: NextConfig = {
       { source: "/store",              destination: MINDBODY_URL, permanent: true },
       { source: "/gift-card",          destination: MINDBODY_URL, permanent: true },
       { source: "/gift-cards",         destination: MINDBODY_URL, permanent: true },
-      { source: "/intro-offer",        destination: "https://www.mindbodyonline.com/explore/deals/fiit-co/intro-offer-10377", permanent: true },
-      { source: "/free-class",         destination: "https://www.mindbodyonline.com/explore/deals/fiit-co/intro-offer-10377", permanent: true },
+      // Intro-offer and free-class share the same shop entrypoint as the
+      // other MindBody redirects — same funnel, no separate deals-page
+      // detour. If MindBody ever publishes a dedicated intro-offer deep
+      // link that resolves without a studioid-based detour, swap it in.
+      { source: "/intro-offer",        destination: MINDBODY_URL, permanent: true },
+      { source: "/free-class",         destination: MINDBODY_URL, permanent: true },
 
       // ── Misc legacy paths ──────────────────────────────────────────
       { source: "/home",               destination: "/", permanent: true },
