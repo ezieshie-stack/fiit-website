@@ -1,24 +1,24 @@
 import Link from "next/link";
+import Image from "next/image";
+import LiveImage from "@/components/ui/live-image";
 import styles from "./site.module.css";
 import CtaSection from "./_components/CtaSection";
 import SiteFooter from "./_components/SiteFooter";
 import { type Testimonial } from "@/components/ui/testimonials-section";
-import { type TeamMember } from "@/components/ui/team-showcase";
-import LiveImage from "@/components/ui/live-image";
-import LiveTeamShowcase from "@/components/ui/live-team-showcase";
 import LiveTestimonials from "@/components/ui/live-testimonials";
 import LiveFAQ, { type FaqItem } from "@/components/ui/live-faq";
+import LiveTeamShowcase from "@/components/ui/live-team-showcase";
 import ScheduleWidget from "@/components/ui/schedule-widget";
 import PromoSlot from "@/components/ui/promo-slot";
-import { MINDBODY_INTRO_OFFER_URL } from "@/lib/mindbody";
-import { TRAINERS } from "./_data/trainers";
+import { MINDBODY_SHOP_URL } from "@/lib/mindbody";
+// Trainer rosters now live in Convex — pulled via <LiveTeamShowcase/> below.
+// Static fallback roster still lives in _data/trainers.ts for build-time
+// safety, but the homepage no longer imports it directly.
 
-// Static fallbacks — rendered when their Convex counterparts have no data
-// yet or are still loading. Keeps SSR / SEO showing real content, and
-// means the home page never shows an empty section after a deploy.
-//
-// Each `Live*` component takes `fallback={…}` for exactly this reason.
 
+// Member testimonials — consumed by <TestimonialsSection> (axorax/testimonials-1
+// reimplemented in CSS Modules). `role` distinguishes longtime members from
+// first-timers so the quote has social proof context.
 const TESTIMONIALS: Testimonial[] = [
   {
     name: "Ahmed A.",
@@ -58,6 +58,8 @@ const TESTIMONIALS: Testimonial[] = [
   },
 ];
 
+// Fallback FAQs used only if Convex is unreachable. Source of truth moved
+// to the `faqEntries` table, edited via ops tool's Website FAQ admin.
 const FAQS: FaqItem[] = [
   {
     q: "Do I need boxing or fight training experience to take a class?",
@@ -65,7 +67,7 @@ const FAQS: FaqItem[] = [
   },
   {
     q: "It's my first time. What equipment do I need?",
-    a: "All you need is workout clothes, comfortable shoes and a refillable water bottle. For your first class, you can borrow a pair of boxing gloves. After that, gloves rent for $5 per session or you can buy a pair from us.",
+    a: "All you need is workout clothes, comfortable shoes and a refillable water bottle. For your first class, you can borrow a pair of boxing gloves. After that, gloves rent for $10 per session or you can buy a pair from us.",
   },
   {
     q: "Do you offer affordable membership options?",
@@ -81,23 +83,18 @@ const FAQS: FaqItem[] = [
   },
 ];
 
-// FIIT team (homepage grid) vs. Boxing Academy head coach (dedicated card).
-// Convex trainers carry a `category` field — "fiit" | "academy" — and
-// <LiveTeamShowcase category="…"/> filters by it. Static fallbacks here
-// split the git TRAINERS roster the same way so SSR looks right.
-const FIIT_TEAM_FALLBACK: TeamMember[] = TRAINERS.filter((t) => t.id !== "nick");
-const ACADEMY_HEAD_COACH_FALLBACK: TeamMember[] = TRAINERS.filter((t) => t.id === "nick");
+// FAQPage JSON-LD now generated inside <LiveFAQ/> from whatever's currently
+// rendered — keeps the structured data in sync with live admin edits.
 
 export default function HomePage() {
   return (
     <>
-      {/* ── Hero ─────────────────────────────────────────────────── */}
       <section className={styles.hero}>
         <div className={styles.heroBgImage}>
           <LiveImage
             slot="home-hero"
             fallbackSrc="/hero/home.webp"
-            fallbackAlt=""
+            fallbackAlt="FIIT Co. boxing studio training floor in Leslieville, Toronto"
             fill
             priority
             sizes="100vw"
@@ -108,13 +105,32 @@ export default function HomePage() {
         <div className={styles.heroInner}>
           <div className={styles.label}>Leslieville · Toronto</div>
           <h1 className={styles.headlineXl}>
-            Toronto&apos;s Boutique<br />Boxing Studio.
+            Toronto's Boutique<br />Boxing Studio.
           </h1>
-          <p className={styles.heroSub}>You&apos;re Worth The Fight.</p>
+          <p
+            style={{
+              fontFamily: "var(--font-oswald), sans-serif",
+              fontSize: "clamp(1.35rem, 2.4vw, 1.9rem)",
+              color: "#D92B2B",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.02em",
+              margin: "1.25rem 0 1.5rem",
+              lineHeight: 1.15,
+            }}
+          >
+            You're Worth The Fight.
+          </p>
+          <p className={styles.heroSub}>
+            FIIT Co. is a boutique boxing and fitness studio in Leslieville,
+            Toronto. Group Fitness, Hybrid Boxing & Conditioning, Muay Thai
+            Kickboxing, Strength Training, HIIT, and the FIIT Boxing Academy
+            at 1047 Gerrard St E. Your first class is free.
+          </p>
           <div className={styles.heroBottom}>
             <div className={styles.heroCtas}>
               <a
-                href={MINDBODY_INTRO_OFFER_URL}
+                href={MINDBODY_SHOP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={styles.btnRed}
@@ -122,7 +138,7 @@ export default function HomePage() {
                 Book Free Class
               </a>
               <Link href="/programs" className={styles.btnOutline}>
-                Programs &amp; Pricing
+                Programs & Pricing
               </Link>
             </div>
             <div className={styles.heroAddress}>
@@ -133,10 +149,23 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Class Schedule — live from staff portal Convex ────────── */}
+      <div className={styles.strip}>
+        <div className={styles.stripText}>
+          Boxing · Strength · Conditioning · Muay Thai · HIIT · Kids · Teens · Private Coaching · Small Group Programs
+        </div>
+      </div>
+
+      {/* Promo video slot — empty unless Arden publishes one here */}
+      <PromoSlot name="home:after-hero" />
+
+      {/* CLASS SCHEDULE — admin-curated weekly template from the Convex
+          `websiteSchedule` table (edited at staff.fiitco.ca > Website UI/UX
+          > Schedule). Falls back to a built-in MindBody-mirrored template
+          when the table is empty. Not connected to operational class data. */}
       <ScheduleWidget />
 
-      {/* ── The Approach ──────────────────────────────────────────── */}
+      <PromoSlot name="home:after-schedule" />
+
       <section className={styles.section}>
         <div className={styles.container}>
           <div className={styles.label}>The Approach</div>
@@ -146,49 +175,63 @@ export default function HomePage() {
           <div className={styles.pillarsGrid}>
             <div className={styles.pillar}>
               <div className={styles.pillarNum}>01</div>
-              <h3 className={styles.pillarTitle}>Boxing First</h3>
+              <div className={styles.pillarSubLabel}>The Training</div>
+              <h3 className={styles.pillarTitle}>Fight Science</h3>
+              <div className={styles.pillarDash} />
               <p className={styles.body}>
-                Everything at FIIT is built around the sweet science. Real
-                technique, real coaching, real fighters on the floor.
+                Muay Thai Kickboxing, Boxing Pad & Bag Work, Full Body Strength
+                Training, and Hybrid Circuit Training - led by certified
+                trainers with decades of competitive and coaching experience.
               </p>
             </div>
             <div className={styles.pillar}>
               <div className={styles.pillarNum}>02</div>
-              <h3 className={styles.pillarTitle}>Every Discipline</h3>
+              <div className={styles.pillarSubLabel}>The Space</div>
+              <h3 className={styles.pillarTitle}>Built To Train</h3>
+              <div className={styles.pillarDash} />
               <p className={styles.body}>
-                From boxing to strength to yoga: a full stack of class
-                formats built to progress you in and out of the ring.
+                An intimate boutique with a spacious, open layout. Heavy bags,
+                focus pads, barbells, kettlebells, Concept2 rowers, Assault
+                Airbikes, sleds, battle ropes, TRX, and more.
               </p>
             </div>
             <div className={styles.pillar}>
               <div className={styles.pillarNum}>03</div>
-              <h3 className={styles.pillarTitle}>Serious Recovery</h3>
+              <div className={styles.pillarSubLabel}>The Community</div>
+              <h3 className={styles.pillarTitle}>Zero Ego. All Heart.</h3>
+              <div className={styles.pillarDash} />
               <p className={styles.body}>
-                Mobility, yin yoga, and recovery built into the schedule.
-                Training hard only works if the body can keep up.
+                Whether you&apos;re stepping into a gym for the first time or
+                training for competition - FIIT Co. is where every level
+                is welcomed and every effort is respected.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── The Team ──────────────────────────────────────────────── */}
+      <PromoSlot name="home:after-pillars" />
+
+      {/* MEET THE TEAM — live from Convex `trainers` table (edited via ops
+          tool's Website Trainers admin). Falls back to static roster if
+          Convex is unreachable. FIIT group trainers first, Boxing Academy
+          coach(es) called out separately below. */}
       <LiveTeamShowcase
         badge="The Team"
         title="Coaches Who Coach For Real."
         category="fiit"
-        fallback={FIIT_TEAM_FALLBACK}
       />
 
-      {/* ── FIIT Boxing Academy — head coach ─────────────────────── */}
       <LiveTeamShowcase
         badge="FIIT Boxing Academy"
         title="Head Coach."
         category="academy"
-        fallback={ACADEMY_HEAD_COACH_FALLBACK}
       />
 
-      {/* ── Testimonials ─────────────────────────────────────────── */}
+      <PromoSlot name="home:after-team" />
+
+      {/* TESTIMONIALS — reads from Convex (ops tool's Website Testimonials
+          admin). Falls back to the static TESTIMONIALS array above. */}
       <LiveTestimonials
         badgeText="Members Talk"
         title="Don't Take Our Word For It."
@@ -196,7 +239,11 @@ export default function HomePage() {
         fallback={TESTIMONIALS}
       />
 
-      {/* ── Stats ─────────────────────────────────────────────────── */}
+      {/* Promo video slot — where the existing FIIT Co. promo lives. When
+          Arden edits it via ops tool's Website Promo Videos admin, the
+          change reflects here within seconds. */}
+      <PromoSlot name="home:after-testimonials" />
+
       <section className={styles.section}>
         <div className={styles.container}>
           <div className={styles.statsRow}>
@@ -205,7 +252,7 @@ export default function HomePage() {
               <div className={styles.statLabel}>Years Head Coach Experience</div>
             </div>
             <div className={styles.stat}>
-              <div className={styles.statNum}>6000</div>
+              <div className={styles.statNum}>2500</div>
               <div className={styles.statLabel}>Square Feet</div>
             </div>
             <div className={styles.stat}>
@@ -220,20 +267,24 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── FAQ ──────────────────────────────────────────────────── */}
-      <LiveFAQ
-        badge="You've Got Questions"
-        title={<>We&apos;ve Got<br />Answers.</>}
-        fallback={FAQS}
-      />
+      <PromoSlot name="home:after-stats" />
 
-      {/* ── Optional promo video slot — rendered iff Convex has rows ── */}
-      <PromoSlot slot="home:after-faq" />
+      {/* FAQ — reads from Convex (ops tool's Website FAQ admin). Falls back
+          to the static FAQS array above. Also emits the FAQPage JSON-LD
+          inline so structured data always matches live admin edits. */}
+      <section className={styles.sectionDark}>
+        <div className={styles.container}>
+          <div className={styles.label}>You've Got Questions</div>
+          <h2 className={styles.headlineLg} style={{ marginBottom: "4rem" }}>
+            We've Got<br />Answers.
+          </h2>
+          <LiveFAQ fallback={FAQS} />
+        </div>
+      </section>
 
-      {/* ── Member Perks (Guest Pass + Refer A Friend) ────────────── */}
+      <PromoSlot name="home:after-faq" />
+
       <CtaSection />
-
-      {/* ── Visit / Contact / Follow / promo-footer / legal footer ── */}
       <SiteFooter />
     </>
   );

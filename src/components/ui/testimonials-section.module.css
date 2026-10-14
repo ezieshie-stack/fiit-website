@@ -130,7 +130,7 @@
   width: 42px;
   height: 42px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #D92B2B 0%, #7a0f0f 100%);
+  background: linear-gradient(135deg, #D92B2B 0%, #000 100%);
   color: #fff;
   font-family: var(--font-oswald);
   font-size: 0.9rem;

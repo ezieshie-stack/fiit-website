@@ -1,23 +1,23 @@
 "use client";
 
 /**
- * LiveFAQ
+ * Live-data wrapper for the homepage FAQ accordion. Reads `faqEntries`
+ * from Convex (edited via ops tool's Website FAQ admin) with a static
+ * fallback baked into the call site in page.tsx.
  *
- * "You've Got Questions / We've Got Answers" section on the home page.
- * Pulls Q&A entries from Convex (via the staff /website-faq page);
- * falls back to the static `fallback` array when Convex has no entries.
+ * Renders the <details>/<summary> accordion pattern preserved from the
+ * original inline version on the homepage, plus the FAQPage JSON-LD for
+ * Google rich-result treatment (generated from live data so search engines
+ * see whatever's currently on the page).
  */
 
 import { useQuery } from "convex/react";
 import { anyApi } from "convex/server";
-import styles from "../../app/site.module.css";
+import styles from "@/app/site.module.css";
 
-export type FaqItem = {
-  q: string;
-  a: string;
-};
+export type FaqItem = { q: string; a: string };
 
-type ConvexFaqEntry = {
+type LiveFaq = {
   _id: string;
   question: string;
   answer: string;
@@ -25,47 +25,52 @@ type ConvexFaqEntry = {
   active: boolean;
 };
 
-type Props = {
-  badge?: string;
-  title?: React.ReactNode;
-  fallback: FaqItem[];
-};
+type Props = { fallback: FaqItem[] };
 
-export default function LiveFAQ({ badge, title, fallback }: Props) {
+function toFaqItem(live: LiveFaq): FaqItem {
+  return { q: live.question, a: live.answer };
+}
+
+export default function LiveFAQ({ fallback }: Props) {
   const live = useQuery(anyApi.websiteContent.listActiveFaqEntries) as
-    | ConvexFaqEntry[]
+    | LiveFaq[]
     | undefined;
 
-  const items: FaqItem[] =
-    live && live.length > 0
-      ? live
-          .sort((a, b) => a.displayOrder - b.displayOrder)
-          .map((e) => ({ q: e.question, a: e.answer }))
-      : fallback;
+  const hasLive = Array.isArray(live) && live.length > 0;
+  const items: FaqItem[] = hasLive ? live!.map(toFaqItem) : fallback;
+
+  // FAQPage JSON-LD generated from whatever we're currently rendering.
+  // Kept inside the client component so structured data always matches
+  // what's visible — if Arden hides a question, search engines see it gone.
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
 
   return (
-    <section className={styles.sectionDark}>
-      <div className={styles.container}>
-        {badge && <div className={styles.label}>{badge}</div>}
-        {title && (
-          <h2 className={styles.headlineLg} style={{ marginBottom: "4rem" }}>
-            {title}
-          </h2>
-        )}
-        <div className={styles.faqList}>
-          {items.map((faq, i) => (
-            <details key={i} className={styles.faqItem}>
-              <summary className={styles.faqQ}>
-                <span className={styles.faqNum}>
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                {faq.q}
-              </summary>
-              <p className={styles.faqA}>{faq.a}</p>
-            </details>
-          ))}
-        </div>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+      <div className={styles.faqList}>
+        {items.map((faq, i) => (
+          <details key={i} className={styles.faqItem}>
+            <summary className={styles.faqQ}>
+              <span className={styles.faqNum}>
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              {faq.q}
+            </summary>
+            <p className={styles.faqA}>{faq.a}</p>
+          </details>
+        ))}
       </div>
-    </section>
+    </>
   );
 }

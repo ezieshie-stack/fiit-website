@@ -1,0 +1,153 @@
+/*
+ * Promo video section — scroll-into-view autoplay, silent loop.
+ *
+ * No user controls visible. The YouTube iframe has pointer-events disabled
+ * so none of YouTube's hover chrome (skip buttons, share icon, uploader
+ * info pop-up) can surface. A top gradient masks any persistent uploader
+ * stamp that YouTube shows on initial load.
+ */
+
+.section {
+  padding: 8rem 0;
+  background: #000;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 5rem;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────── */
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.95rem;
+  font-family: var(--font-chakra);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #D92B2B;
+  margin-bottom: 2.2rem;
+}
+
+.label::before {
+  content: "";
+  display: block;
+  width: 32px;
+  height: 2px;
+  background: #D92B2B;
+  flex-shrink: 0;
+}
+
+.headline {
+  font-family: var(--font-oswald);
+  font-weight: 700;
+  font-size: clamp(2.75rem, 5.5vw, 5.75rem);
+  text-transform: uppercase;
+  line-height: 0.92;
+  letter-spacing: -0.5px;
+  color: #fff;
+  margin: 0 0 1.5rem;
+}
+
+.sub {
+  max-width: 620px;
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.6;
+  margin: 0 0 3rem;
+}
+
+/* ── Video frame ─────────────────────────────────────────────────────── */
+
+.videoFrame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #0a0a0a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.videoIframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Kill all user interaction with the YouTube iframe so the hover-triggered
+   chrome (skip controls, share icon, uploader info pop-up) never appears.
+   Scroll-based play/pause still works because it's driven by the JS API,
+   not user clicks on the iframe. */
+.videoIframe iframe,
+.videoFrame iframe {
+  width: 100% !important;
+  height: 100% !important;
+  border: 0;
+  display: block;
+  pointer-events: none;
+}
+
+/* Top gradient — masks YouTube's persistent uploader stamp that shows
+   during the first few seconds of the embed (profile pic + channel name +
+   video title). YouTube removed showinfo=0 in 2018 so this can't be hidden
+   via player params anymore. Gradient fades from near-opaque at the very
+   top to fully transparent by ~90px, so it looks cinematic rather than
+   like a crude black bar. */
+.videoFrame::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 90px;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.88) 0%,
+    rgba(0, 0, 0, 0.55) 45%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Bottom gradient — matches the top for visual balance and softens the
+   edge into the surrounding black section. Also helps mask YouTube's
+   modest-branding watermark bottom-right. */
+.videoFrame::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.68) 0%,
+    rgba(0, 0, 0, 0.25) 55%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────── */
+
+@media (max-width: 1100px) {
+  .container { padding: 0 3rem; }
+  .section { padding: 6rem 0; }
+}
+
+@media (max-width: 860px) {
+  .container { padding: 0 1.5rem; }
+  .section { padding: 5rem 0; }
+  .sub { margin-bottom: 2.25rem; }
+
+  .videoFrame::before { height: 70px; }
+  .videoFrame::after { height: 55px; }
+}

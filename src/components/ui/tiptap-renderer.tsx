@@ -1,149 +1,175 @@
 /**
- * TipTap/ProseMirror JSON renderer — no TipTap deps.
+ * TipTap JSON → React renderer.
  *
- * The staff portal's TipTap editor saves documents as serialized
- * ProseMirror JSON. We render it to React without pulling in the TipTap
- * React package (and its ~15 extension subpackages) so the public bundle
- * stays small.
+ * Pure recursive renderer (no hooks) — works in both server and client
+ * components. Covers the subset of TipTap extensions used by the blog
+ * editor: paragraphs, headings (H1-H3), text + bold/italic/link marks,
+ * bullet/ordered lists, blockquote, horizontal rule, inline image,
+ * hard break.
  *
- * Covers the node and mark types the staff editor emits (StarterKit +
- * Link + Image). An unknown node type renders as its children or a plain
- * fallback so the page doesn't blank out when staff add a new feature
- * before this renderer catches up.
+ * Anything not in this list silently renders nothing. If the blog editor
+ * ever adds a new extension (e.g. code blocks), mirror it here.
+ *
+ * Security: we only read known node/mark types. Text content is inserted
+ * via React's text interpolation, so no XSS risk — unlike dangerouslySet-
+ * InnerHTML-based approaches. Links with unsafe schemes are filtered.
  */
-import * as React from "react";
 
-type Mark = {
-  type: string;
-  attrs?: Record<string, unknown>;
+import Link from "next/link";
+import styles from "@/app/site.module.css";
+
+// ── TipTap node type definitions (minimal, just what we render) ───────
+
+type TipTapMark =
+  | { type: "bold" }
+  | { type: "italic" }
+  | { type: "link"; attrs: { href: string } };
+
+type TipTapTextNode = {
+  type: "text";
+  text: string;
+  marks?: TipTapMark[];
 };
 
-type Node = {
+type TipTapBlockNode = {
   type: string;
   attrs?: Record<string, unknown>;
-  content?: Node[];
-  text?: string;
-  marks?: Mark[];
+  content?: Array<TipTapTextNode | TipTapBlockNode>;
 };
 
-export default function TipTapRenderer({ json }: { json: string }) {
-  const doc = React.useMemo<Node | null>(() => {
-    try {
-      const parsed = JSON.parse(json) as Node;
-      return parsed;
-    } catch {
-      return null;
-    }
-  }, [json]);
+type TipTapDoc = {
+  type: "doc";
+  content?: Array<TipTapBlockNode>;
+};
 
-  if (!doc || !doc.content) return null;
-  return <>{doc.content.map((n, i) => renderNode(n, String(i)))}</>;
+// ── Public API ────────────────────────────────────────────────────────
+
+export default function TipTapRenderer({ json }: { json: string | undefined }) {
+  const doc = parseDoc(json);
+  if (!doc) return null;
+  return <>{(doc.content ?? []).map((node, i) => renderBlock(node, i))}</>;
 }
 
-function renderNode(node: Node, key: string): React.ReactNode {
-  const children = node.content?.map((c, i) => renderNode(c, `${key}.${i}`)) ?? null;
+function parseDoc(json: string | undefined): TipTapDoc | null {
+  if (!json) return null;
+  try {
+    const parsed = JSON.parse(json);
+    if (parsed && parsed.type === "doc") return parsed as TipTapDoc;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// ── Block-level nodes ────────────────────────────────────────────────
+
+function renderBlock(node: TipTapBlockNode, key: number): React.ReactNode {
+  const children = (node.content ?? []).map((child, i) => {
+    if (child.type === "text") return renderTextNode(child as TipTapTextNode, i);
+    return renderBlock(child as TipTapBlockNode, i);
+  });
 
   switch (node.type) {
     case "paragraph":
-      return <p key={key}>{children}</p>;
+      // Empty paragraphs (no content) still render to create spacing.
+      return (
+        <p key={key} className={styles.postPara}>
+          {children.length > 0 ? children : <>&nbsp;</>}
+        </p>
+      );
 
     case "heading": {
-      const level = Number(node.attrs?.level ?? 2);
-      const Tag = (`h${Math.min(6, Math.max(1, level))}`) as "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
-      return <Tag key={key}>{children}</Tag>;
+      const level = Math.min(Math.max((node.attrs?.level as number) ?? 2, 1), 3);
+      // Explicit mapping — CSS Modules can't tree-shake dynamic template keys
+      const headingClass =
+        level === 1 ? styles.postHeading1
+        : level === 2 ? styles.postHeading2
+        : styles.postHeading3;
+      if (level === 1) return <h1 key={key} className={headingClass}>{children}</h1>;
+      if (level === 2) return <h2 key={key} className={headingClass}>{children}</h2>;
+      return <h3 key={key} className={headingClass}>{children}</h3>;
     }
 
     case "bulletList":
-      return <ul key={key}>{children}</ul>;
+      return <ul key={key} className={styles.postList}>{children}</ul>;
 
     case "orderedList":
-      return <ol key={key}>{children}</ol>;
+      return <ol key={key} className={styles.postListOrdered}>{children}</ol>;
 
     case "listItem":
       return <li key={key}>{children}</li>;
 
     case "blockquote":
-      return <blockquote key={key}>{children}</blockquote>;
-
-    case "codeBlock": {
-      const lang = typeof node.attrs?.language === "string" ? node.attrs.language : undefined;
       return (
-        <pre key={key}>
-          <code className={lang ? `language-${lang}` : undefined}>{children}</code>
-        </pre>
+        <blockquote key={key} className={styles.postQuote}>
+          {children}
+        </blockquote>
       );
-    }
 
     case "horizontalRule":
-      return <hr key={key} />;
+      return <hr key={key} className={styles.postHr} />;
 
     case "hardBreak":
       return <br key={key} />;
 
     case "image": {
-      const src = typeof node.attrs?.src === "string" ? node.attrs.src : "";
-      const alt = typeof node.attrs?.alt === "string" ? node.attrs.alt : "";
-      const title = typeof node.attrs?.title === "string" ? node.attrs.title : undefined;
+      const src = node.attrs?.src as string | undefined;
+      const alt = (node.attrs?.alt as string | undefined) ?? "";
       if (!src) return null;
       // eslint-disable-next-line @next/next/no-img-element
-      return <img key={key} src={src} alt={alt} title={title} />;
-    }
-
-    case "text":
-      return renderText(node, key);
-
-    default:
-      // Unknown nodes render their children if they have any, else nothing.
-      // Keeps the page functional when staff use a node type we haven't
-      // taught this renderer about yet.
-      return children ? <React.Fragment key={key}>{children}</React.Fragment> : null;
-  }
-}
-
-function renderText(node: Node, key: string): React.ReactNode {
-  const text = node.text ?? "";
-  if (!node.marks || node.marks.length === 0) {
-    return <React.Fragment key={key}>{text}</React.Fragment>;
-  }
-
-  // Apply marks innermost-out so the final element is the outermost
-  // wrapper. Order doesn't matter semantically, but we keep it stable.
-  let element: React.ReactNode = text;
-  for (const mark of node.marks) {
-    element = wrapWithMark(mark, element);
-  }
-  return <React.Fragment key={key}>{element}</React.Fragment>;
-}
-
-function wrapWithMark(mark: Mark, children: React.ReactNode): React.ReactNode {
-  switch (mark.type) {
-    case "bold":
-    case "strong":
-      return <strong>{children}</strong>;
-    case "italic":
-    case "em":
-      return <em>{children}</em>;
-    case "strike":
-      return <s>{children}</s>;
-    case "underline":
-      return <u>{children}</u>;
-    case "code":
-      return <code>{children}</code>;
-    case "subscript":
-      return <sub>{children}</sub>;
-    case "superscript":
-      return <sup>{children}</sup>;
-    case "link": {
-      const href = typeof mark.attrs?.href === "string" ? mark.attrs.href : "#";
-      const target = typeof mark.attrs?.target === "string" ? mark.attrs.target : undefined;
-      const rel = target === "_blank" ? "noopener noreferrer" : undefined;
       return (
-        <a href={href} target={target} rel={rel}>
-          {children}
-        </a>
+        <img
+          key={key}
+          src={src}
+          alt={alt}
+          className={styles.postImage}
+          loading="lazy"
+        />
       );
     }
+
     default:
-      return children;
+      // Unknown block — silently skip rather than crashing the post.
+      return null;
   }
+}
+
+// ── Inline text + marks ──────────────────────────────────────────────
+
+function renderTextNode(node: TipTapTextNode, key: number): React.ReactNode {
+  let el: React.ReactNode = node.text;
+  const marks = node.marks ?? [];
+
+  for (const mark of marks) {
+    if (mark.type === "bold") el = <strong>{el}</strong>;
+    else if (mark.type === "italic") el = <em>{el}</em>;
+    else if (mark.type === "link") {
+      const href = (mark as { attrs: { href: string } }).attrs?.href ?? "";
+      if (!isSafeHref(href)) continue;
+      // Next.js <Link> for internal links, <a> with target=_blank for external
+      if (href.startsWith("/")) {
+        el = <Link href={href}>{el}</Link>;
+      } else {
+        el = (
+          <a href={href} target="_blank" rel="noopener noreferrer">
+            {el}
+          </a>
+        );
+      }
+    }
+  }
+
+  return <span key={key}>{el}</span>;
+}
+
+function isSafeHref(href: string): boolean {
+  if (!href) return false;
+  // Allow relative, http, https, mailto, tel. Block javascript: / data:
+  return (
+    href.startsWith("/") ||
+    href.startsWith("http://") ||
+    href.startsWith("https://") ||
+    href.startsWith("mailto:") ||
+    href.startsWith("tel:")
+  );
 }

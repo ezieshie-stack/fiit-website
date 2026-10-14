@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     template: "%s | FIIT Co.",
   },
   description:
-    "FIIT Co. is Toronto's boutique boxing and fitness studio in Leslieville. Group classes, personal training, Boxing Academy, and kids programs at 1047 Gerrard St E. First class free.",
+    "FIIT Co. is a boutique boxing and fitness studio in Leslieville, Toronto. Group Fitness, Muay Thai Kickboxing, Strength Training, HIIT, and the FIIT Boxing Academy at 1047 Gerrard St E. Your first class is free.",
   keywords: [
     "boxing Toronto",
     "Leslieville gym",
@@ -69,9 +69,7 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  icons: {
-    icon: "/favicon.ico",
-  },
+  // Favicon is auto-detected from src/app/icon.png (Next 16 convention).
 };
 
 const localBusinessJsonLd = {
@@ -81,7 +79,7 @@ const localBusinessJsonLd = {
   name: "FIIT Co.",
   alternateName: "FIIT Co. Boxing & Fitness",
   url: SITE_URL,
-  logo: `${SITE_URL}/favicon.ico`,
+  logo: `${SITE_URL}/brand/logo.png`,
   image: [`${SITE_URL}/hero/home.webp`],
   telephone: "+1-416-565-9300",
   email: "info@fiitco.ca",

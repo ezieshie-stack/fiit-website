@@ -1,4 +1,19 @@
+"use client";
+
+/**
+ * Site footer — now reads the primary studio location live from Convex
+ * (edited via ops tool's Website Locations admin). Falls back to the
+ * original hardcoded Leslieville details if Convex is unreachable so the
+ * footer never renders blank.
+ *
+ * Note: converted from a server component to a client component so we can
+ * useQuery directly. The perf impact is minimal — the footer already
+ * hydrated client-side for the Map widget.
+ */
+
 import Link from "next/link";
+import { useQuery } from "convex/react";
+import { anyApi } from "convex/server";
 import styles from "../site.module.css";
 import {
   Map,
@@ -6,20 +21,24 @@ import {
   MarkerContent,
   MarkerTooltip,
 } from "@/components/ui/map";
+import { MINDBODY_SHOP_URL } from "@/lib/mindbody";
 
-// FIIT Co. — 1047 Gerrard St E, Toronto, ON M4M 1Z7
-// Coordinates geocoded from OpenStreetMap Nominatim against the full address.
-const LAT = 43.6689575;
-const LNG = -79.3362194;
-// Google Maps deep link — uses the full address as the destination so mobile
-// devices open the native Maps app with the right pin + directions flow.
-const GMAPS_LINK =
-  "https://www.google.com/maps/search/?api=1&query=" +
-  encodeURIComponent("FIIT Co., 1047 Gerrard St E, Toronto, ON M4M 1Z7");
-const MINDBODY_URL =
-  "https://www.mindbodyonline.com/explore/deals/fiit-co/intro-offer-10377";
+// ── Fallback location (used only if Convex is unreachable or empty) ────
+const FALLBACK = {
+  name: "FIIT Co. Leslieville",
+  address1: "1047 Gerrard St E",
+  city: "Toronto",
+  region: "ON",
+  postalCode: "M4M 1Z7",
+  phone: "(416) 565-9300",
+  email: "info@fiitco.ca",
+  latitude: 43.6689575,
+  longitude: -79.3362194,
+  hoursMonFri: "6:00 AM – 8:30 PM",
+  hoursSatSun: "8:00 AM – 8:30 PM",
+};
 
-// Simple inline SVG icons — no external dependency, keeps bundle small
+// Inline SVG icons — kept local, no external dependency
 function IgIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
@@ -36,23 +55,39 @@ function FbIcon() {
     </svg>
   );
 }
-function YtIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
-      <path d="M21.6 7.2c-.24-.9-.93-1.6-1.83-1.83C18.17 5 12 5 12 5s-6.17 0-7.77.37C3.33 5.6 2.64 6.3 2.4 7.2 2.03 8.8 2.03 12 2.03 12s0 3.2.37 4.8c.24.9.93 1.6 1.83 1.83C5.83 19 12 19 12 19s6.17 0 7.77-.37c.9-.23 1.6-.93 1.83-1.83.37-1.6.37-4.8.37-4.8s0-3.2-.37-4.8zM10 15.06V8.94L15.33 12 10 15.06z" />
-    </svg>
-  );
-}
-function TtIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
-      <path d="M19.5 8.9a6.9 6.9 0 0 1-4.06-1.3v6.9a5.6 5.6 0 1 1-4.83-5.55v2.82a2.83 2.83 0 1 0 1.97 2.7V2.5h2.86a4.04 4.04 0 0 0 4.06 4v2.4z" />
-    </svg>
-  );
-}
+
+type LiveLocation = {
+  _id: string;
+  name: string;
+  address1: string;
+  address2?: string;
+  city: string;
+  region: string;
+  postalCode: string;
+  phone: string;
+  email: string;
+  latitude: number;
+  longitude: number;
+  hoursMonFri: string;
+  hoursSatSun: string;
+};
 
 export default function SiteFooter() {
   const year = new Date().getFullYear();
+  const live = useQuery(anyApi.websiteContent.getPrimaryLocation) as
+    | LiveLocation
+    | null
+    | undefined;
+
+  // Use live data if available, otherwise fall back. Either way the user
+  // sees a complete footer.
+  const loc = live && live._id ? live : FALLBACK;
+
+  const fullAddress = `${loc.name}, ${loc.address1}, ${loc.city}, ${loc.region} ${loc.postalCode}`;
+  const gmapsLink =
+    "https://www.google.com/maps/search/?api=1&query=" +
+    encodeURIComponent(fullAddress);
+
   return (
     <>
       <section className={styles.preFooter} aria-labelledby="prefooter-heading">
@@ -65,33 +100,33 @@ export default function SiteFooter() {
             <div className={styles.preFooterLabel}>Our Studio</div>
             <div className={styles.preFooterMap}>
               <Map
-                center={[LNG, LAT]}
+                center={[loc.longitude, loc.latitude]}
                 zoom={15}
                 interactive={false}
                 attributionControl={false}
               >
-                <MapMarker longitude={LNG} latitude={LAT}>
+                <MapMarker longitude={loc.longitude} latitude={loc.latitude}>
                   <MarkerContent>
                     <span className={styles.preFooterMapPin} aria-hidden="true" />
                   </MarkerContent>
-                  <MarkerTooltip>FIIT Co., 1047 Gerrard St E</MarkerTooltip>
+                  <MarkerTooltip>{loc.name}, {loc.address1}</MarkerTooltip>
                 </MapMarker>
               </Map>
               <a
                 className={styles.preFooterMapOverlay}
-                href={GMAPS_LINK}
+                href={gmapsLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Get directions to FIIT Co. on Google Maps"
+                aria-label={`Get directions to ${loc.name} on Google Maps`}
               >
                 <span>Get Directions →</span>
               </a>
             </div>
             <div className={styles.preFooterAddress}>
-              <div>1047 Gerrard St E</div>
-              <div>Toronto, ON M4M 1Z7</div>
-              <a href="tel:+14165659300" className={styles.preFooterLink}>
-                (416) 565-9300
+              <div>{loc.address1}</div>
+              <div>{loc.city}, {loc.region} {loc.postalCode}</div>
+              <a href={`tel:${loc.phone.replace(/[^0-9+]/g, "")}`} className={styles.preFooterLink}>
+                {loc.phone}
               </a>
             </div>
           </div>
@@ -103,20 +138,17 @@ export default function SiteFooter() {
               Questions about membership, personal training, or just want to swing by
               and check the floor? Drop us a line.
             </p>
-            <a
-              href="mailto:info@fiitco.ca"
-              className={styles.preFooterEmail}
-            >
-              info@fiitco.ca
+            <a href={`mailto:${loc.email}`} className={styles.preFooterEmail}>
+              {loc.email}
             </a>
             <div className={styles.preFooterHours}>
               <div className={styles.preFooterHoursRow}>
                 <span>Mon – Fri</span>
-                <span>6:00 AM – 8:30 PM</span>
+                <span>{loc.hoursMonFri}</span>
               </div>
               <div className={styles.preFooterHoursRow}>
                 <span>Sat – Sun</span>
-                <span>8:00 AM – 8:30 PM</span>
+                <span>{loc.hoursSatSun}</span>
               </div>
             </div>
           </div>
@@ -129,49 +161,14 @@ export default function SiteFooter() {
               and the community we train alongside.
             </p>
             <div className={styles.preFooterSocials}>
-              <a
-                href="https://www.instagram.com/fiitco/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.preFooterSocial}
-                aria-label="Follow FIIT Co. on Instagram"
-              >
+              <a href="https://www.instagram.com/fiitco/" target="_blank" rel="noopener noreferrer" className={styles.preFooterSocial} aria-label="Follow FIIT Co. on Instagram">
                 <IgIcon />
               </a>
-              <a
-                href="https://www.facebook.com/fiitco/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.preFooterSocial}
-                aria-label="Follow FIIT Co. on Facebook"
-              >
+              <a href="https://www.facebook.com/fiitco/" target="_blank" rel="noopener noreferrer" className={styles.preFooterSocial} aria-label="Follow FIIT Co. on Facebook">
                 <FbIcon />
               </a>
-              <a
-                href="https://www.tiktok.com/@fiitco"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.preFooterSocial}
-                aria-label="Follow FIIT Co. on TikTok"
-              >
-                <TtIcon />
-              </a>
-              <a
-                href="https://www.youtube.com/@fiitco"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.preFooterSocial}
-                aria-label="Follow FIIT Co. on YouTube"
-              >
-                <YtIcon />
-              </a>
             </div>
-            <a
-              href={MINDBODY_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.preFooterCta}
-            >
+            <a href={MINDBODY_SHOP_URL} target="_blank" rel="noopener noreferrer" className={styles.preFooterCta}>
               First Class Free →
             </a>
           </div>
@@ -181,20 +178,14 @@ export default function SiteFooter() {
       <footer className={styles.footer}>
         <div className={styles.footerLegal}>
           <div className={styles.footerCopyright}>
-            © {year} FIIT Co. All rights reserved.
+            © {year} {loc.name.replace(/ Leslieville$/, "")}. All rights reserved.
           </div>
           <nav className={styles.footerLegalLinks} aria-label="Legal">
-            <Link href="/privacy-policy" className={styles.footerLegalLink}>
-              Privacy Policy
-            </Link>
+            <Link href="/privacy-policy" className={styles.footerLegalLink}>Privacy Policy</Link>
             <span className={styles.footerLegalDivider} aria-hidden="true">·</span>
-            <Link href="/terms" className={styles.footerLegalLink}>
-              Terms of Use
-            </Link>
+            <Link href="/terms" className={styles.footerLegalLink}>Terms of Use</Link>
             <span className={styles.footerLegalDivider} aria-hidden="true">·</span>
-            <Link href="/accessibility" className={styles.footerLegalLink}>
-              Accessibility
-            </Link>
+            <Link href="/accessibility" className={styles.footerLegalLink}>Accessibility</Link>
           </nav>
         </div>
       </footer>

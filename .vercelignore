@@ -1,0 +1,24 @@
+# Keep the production deployment lean. Large binary assets should live on
+# a CDN / video host (YouTube, Vimeo, Cloudflare Stream), not in the
+# Vercel deploy. Vercel hard-caps individual files at 100 MB anyway.
+#
+# If you need to add a new media extension here, also add it to .gitignore
+# so it doesn't accidentally get committed first.
+
+# ── Raw video masters (promo sources, uncompressed recordings) ──────────
+*.mov
+*.MOV
+*.mp4.bak
+*.raw
+
+# ── Large audio masters ─────────────────────────────────────────────────
+*.wav
+*.aiff
+
+# ── Archives / export bundles ───────────────────────────────────────────
+*.zip
+*.tar.gz
+*.7z
+
+# ── macOS noise ─────────────────────────────────────────────────────────
+.DS_Store
