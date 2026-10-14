@@ -8,7 +8,6 @@ import { type Testimonial } from "@/components/ui/testimonials-section";
 import LiveTestimonials from "@/components/ui/live-testimonials";
 import LiveFAQ, { type FaqItem } from "@/components/ui/live-faq";
 import LiveTeamShowcase from "@/components/ui/live-team-showcase";
-import ScheduleWidget from "@/components/ui/schedule-widget";
 import PromoSlot from "@/components/ui/promo-slot";
 import { MINDBODY_SHOP_URL } from "@/lib/mindbody";
 // Trainer rosters now live in Convex — pulled via <LiveTeamShowcase/> below.
@@ -158,11 +157,10 @@ export default function HomePage() {
       {/* Promo video slot — empty unless Arden publishes one here */}
       <PromoSlot name="home:after-hero" />
 
-      {/* CLASS SCHEDULE — admin-curated weekly template from the Convex
-          `websiteSchedule` table (edited at staff.fiitco.ca > Website UI/UX
-          > Schedule). Falls back to a built-in MindBody-mirrored template
-          when the table is empty. Not connected to operational class data. */}
-      <ScheduleWidget />
+      {/* Schedule widget removed from the home page — moving to a dedicated
+          landing page later. ScheduleWidget component + its Convex wiring +
+          the staff admin page at /website-schedule stay in place, just not
+          mounted here. */}
 
       <PromoSlot name="home:after-schedule" />
 
