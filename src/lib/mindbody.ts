@@ -20,15 +20,15 @@
  * components.
  */
 
-// FIIT Co.'s MindBody studio ID. Without this, first-time visitors hit
-// MindBody's generic "find your studio" search page instead of landing
-// directly in FIIT Co.'s class schedule / shop. Returning visitors used
-// to skip the search because MindBody cached the studio in a cookie —
-// which is why this bug was invisible to anyone who'd booked before.
+// FIIT Co.'s MindBody studio ID. Still used for the SHOP flow where
+// first-time visitors would otherwise hit MindBody's generic "find your
+// studio" search page. The SCHEDULE flow (classic/mainclass) now lands
+// on the Classes tab directly via tabID=7, which handles studio
+// resolution on MindBody's side without the explicit studioid param.
 const STUDIO_ID = "414792";
 
 export const MINDBODY_SCHEDULE_URL =
-  `https://clients.mindbodyonline.com/classic/mainclass?studioid=${STUDIO_ID}&fl=true`;
+  "https://clients.mindbodyonline.com/classic/mainclass?fl=true&tabID=7";
 
 export const MINDBODY_SHOP_URL =
   `https://clients.mindbodyonline.com/asp/main_shop.asp?studioid=${STUDIO_ID}&fl=true&tabID=3`;
